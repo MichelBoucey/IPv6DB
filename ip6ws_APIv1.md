@@ -76,7 +76,7 @@ If successful, returns an empty response body.
 
 ### /ip6ws/v1/list/\{*listName*\}/addresses
 
-__POST /ip6ws/v1/list/\{__*listName*__\}/addresses
+__POST /ip6ws/v1/list/\{__*listName*__\}/addresses__
 
 Create many IPv6 addresses with their related data to the given list.
 
@@ -159,7 +159,7 @@ Delete many IPv6 addresses from the given list.
 __PUT /ip6ws/v1/batch__
 
 ```json
-    PUT /batch
+    PUT /ip6ws/v1/batch
     [
       {
         "list": "hosts",
