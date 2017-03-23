@@ -4,4 +4,4 @@
 
 [ip6ws API Description](https://github.com/MichelBoucey/ip6ws/blob/master/IP6WS_APIv1.md)
 
-## Not release yet! Work In Progress.
+## No release yet! Work In Progress.
