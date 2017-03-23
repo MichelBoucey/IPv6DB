@@ -12,7 +12,7 @@ category:            network, Database
 build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
-                   , IP6WS_APIv1.md
+                   , ip6ws_APIv1.md
 
 Source-Repository head
   Type: git
