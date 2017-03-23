@@ -11,6 +11,8 @@ __POST /ip6ws/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
 Create an IPv6 address with its related data to the given list.
 
     POST /ip6ws/v1/list/hosts/addresses/abcd::1234
+
+```json
     {
       "ttl": null,
       "source":
@@ -18,13 +20,17 @@ Create an IPv6 address with its related data to the given list.
           "services": ["smtp","imap"]
         }
     }
-
+```
 
 __PUT /ip6ws/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
 
 Replace an IPv6 address with its related data to the given list.
 
+```
     PUT /ip6ws/v1/list/hosts/addresses/abcd::1234
+```
+
+```json
     {
       "ttl": null,
       "source":
@@ -32,6 +38,7 @@ Replace an IPv6 address with its related data to the given list.
           "services": ["smtp","imap","ssh"]
         }
     }
+```
 
 Response:
 
@@ -45,6 +52,7 @@ __GET /ip6ws/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
 
 Response:
 
+```json
     {
       "list": "hosts",
       "address": "abcd::1234",
@@ -54,6 +62,7 @@ Response:
           "services": ["smtp","imap","ssh"]
         }
     }
+```
 
 __DELETE /ip6ws/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
 
@@ -71,7 +80,7 @@ __POST /ip6ws/v1/list/\{__*listName*__\}/addresses
 
 Create many IPv6 addresses with their related data to the given list.
 
-```
+```json
     POST /ip6ws/v1/hosts/addresses
     [
       {
@@ -97,7 +106,7 @@ __PUT /ip6ws/v1/list/\{__*listName*__\}/addresses__
 
 Replace many IPv6 addresses with their related data to the given list.
 
-```
+```json
     PUT /ip6ws/v1/hosts/addresses
     [
       {
@@ -125,26 +134,31 @@ __GET /ip6ws/v1/list/\{__*listName*__\}/addresses__
 
 Get data related to the given IPv6address.
 
+```json
     GET /ip6ws/v1/hosts/addresses
     [
       "abcd::1234",
       "abcd::1235"
     ]
+```
 
 __DELETE /ip6ws/v1/list/\{__*listName*__\}/addresses__
 
 Delete many IPv6 addresses from the given list.
 
+```json
     DELETE /ip6ws/v1/hosts/addresses
     [
       "abcd::1234",
       "abcd::1235"
     ]
+```
 
 ### /ip6ws/v1/batch
 
 __PUT /ip6ws/v1/batch__
 
+```json
     PUT /batch
     [
       {
@@ -163,9 +177,11 @@ __PUT /ip6ws/v1/batch__
          "source": null
       }
     ]
+```
 
 __GET /ip6ws/v1/batch__
 
+```json
     GET /ip6ws/v1/batch
     [
       {
@@ -177,9 +193,11 @@ __GET /ip6ws/v1/batch__
         "address": "bad0:1234"
       }
     ]
+```
 
 __DELETE /ip6ws/v1/batch__
 
+```json
     DELETE /ip6ws/v1/batch
     [
       {
@@ -191,4 +209,5 @@ __DELETE /ip6ws/v1/batch__
         "address": "bad0:1234"
       }
     ]
+```
 
