@@ -1,0 +1,130 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE RecordWildCards       #-}
+
+module Network.IP6WS.Types where
+
+import           Data.Aeson      as A
+import qualified Data.ByteString as BS
+import           Data.Maybe      (isJust)
+import qualified Data.Text       as T
+import qualified Data.Vector     as V
+import           Text.IPv6Addr
+
+newtype Address = Address IPv6Addr deriving (Eq, Show)
+
+instance ToJSON Address where
+  toJSON (Address (IPv6Addr a)) = String a
+
+instance FromJSON Address where
+  parseJSON (String s) =
+    case maybeIPv6Addr s of
+      Just a  -> pure (Address a)
+      Nothing -> fail "Not An IPv6 Address"
+  parseJSON _          = fail "JSON String Expected"
+
+data Entries = Entries [Entry]
+
+instance FromJSON Entries where
+  parseJSON (Array v) = do
+    let ents = fromJSON <$> V.toList v
+    if all isSuccess ents
+      then pure (Entries  $ toEnt <$> ents)
+      else fail "Malformed JSON Array"
+  parseJSON _           = fail "JSON Array Expected"
+
+toEnt :: Result Entry -> Entry
+toEnt (A.Success e) = e
+toEnt (A.Error _)   = undefined
+
+data Entry =
+  Entry
+    { list    :: !T.Text
+    , address :: Address
+    } deriving (Eq, Show)
+
+instance FromJSON Entry where
+  parseJSON (Object o) = do
+    list    <- o .: "list"
+    address <- o .: "address"
+    pure Entry{..}
+  parseJSON _          = fail "JSON Object Expected"
+
+data RedisError =
+  RedisError
+    { entry :: Entry
+    , error :: BS.ByteString
+    }
+  | RedisOk deriving (Eq, Show)
+
+data Addresses = Addresses [Address]
+
+instance FromJSON Addresses where
+  parseJSON (Array v) = do
+    let mas = (\(String s) -> maybeIPv6Addr s) <$> V.toList v
+    if all isJust mas
+      then pure (Addresses $ (\(Just a) -> Address a) <$> mas)
+      else fail "Error Within JSON Array Of IPv6 Addresses"
+  parseJSON _           = fail "JSON Array Expected"
+
+data Source = Source !Value deriving (Eq, Show)
+
+instance ToJSON Source where
+  toJSON (Source v) = v
+
+instance FromJSON Source where
+  parseJSON v = pure (Source v)
+
+data Resource =
+  Resource
+    { list    :: !T.Text
+    , address :: !Address
+    , ttl     :: !(Maybe Integer)
+    , source  :: !Source
+    } deriving (Eq, Show)
+
+instance ToJSON Resource where
+  toJSON Resource{..} =
+    object
+      [ "list"    .= list
+      , "address" .= address
+      , "ttl"     .= ttl
+      , "source"  .= source
+      ]
+
+instance FromJSON Resource where
+  parseJSON =
+    withObject "resource" $
+      \o -> do
+        list    <- o .: "list"
+        address <- do
+          ma <- o .: "address"
+          case maybeIPv6Addr ma of
+            Just a  -> pure (Address a)
+            Nothing -> fail "Not an IPv6 Address"
+        ttl     <- o .: "ttl"
+        source  <- o .: "source"
+        return Resource{..}
+
+data Resources = Resources [Resource] deriving (Eq, Show)
+
+instance ToJSON Resources where
+  toJSON (Resources rs) =
+    object [ ("resources", Array (V.fromList $ toJSON <$> rs)) ]
+
+instance FromJSON Resources where
+  parseJSON (Array v) = do
+    let rsrcs = fromJSON <$> V.toList v
+    if all isSuccess rsrcs
+      then pure $ Resources (toRsrc <$> rsrcs)
+      else fail "Malformed JSON Array Of Resources"
+  parseJSON _           = fail "JSON Array Expected"
+
+isSuccess :: Result a -> Bool
+isSuccess (A.Success _) = True
+isSuccess (A.Error _)   = False
+
+toRsrc :: Result Resource -> Resource
+toRsrc (A.Success r) = r
+toRsrc (A.Error _)   = undefined
+

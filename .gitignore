@@ -1,0 +1,5 @@
+.ghci
+dist
+.stack-work
+tags
+*.swp
