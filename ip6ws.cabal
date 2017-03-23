@@ -22,7 +22,7 @@ library
   hs-source-dirs:     src
   exposed-modules:    Network.IP6WS.Types 
                     , Network.IP6WS
-  build-depends:      aeson                >= 0.11.2 && < 0.12
+  build-depends:      aeson                >= 0.11.2 && < 1.1
                     , attoparsec           >= 0.13.1.0 && < 0.14
                     , base                 >= 4.9.0 && < 5.0
                     , bytestring           >= 0.10.6 && < 0.11
@@ -38,7 +38,7 @@ library
 executable ip6ws
   hs-source-dirs:     app
   main-is:            Main.hs
-  build-depends:      aeson                >= 0.11.2 && < 0.12
+  build-depends:      aeson                >= 0.11.2 && < 1.1
                     , base                 >= 4.9.0 && < 5.0
                     , bytestring           >= 0.10.6 && < 0.11
                     , ip6ws                >= 0.1.0 && < 0.2
