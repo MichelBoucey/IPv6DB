@@ -11,6 +11,7 @@ import           Data.Aeson               as A
 import           Data.ByteString          hiding (all, notElem, zipWith)
 import qualified Data.ByteString.Lazy     as BSL
 import           Data.Maybe
+import           Data.Monoid              ((<>))
 import           Data.Text.Encoding
 import qualified Data.Vector              as V
 import qualified Database.Redis           as R
