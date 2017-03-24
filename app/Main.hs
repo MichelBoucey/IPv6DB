@@ -136,7 +136,7 @@ ip6ws req res = do
                 case ed of
                   Right d ->
                     case d of
-                      0 -> jsonNotFound "No Deletion Performed"
+                      0 -> jsonRes404 (justError "No Deletion Performed")
                       _ -> noContent204
                   Left _  -> jsonError "Error"
               Nothing -> badJSONRequest
@@ -180,7 +180,7 @@ ip6ws req res = do
                 case ed of
                   Right d ->
                     case d of
-                      0 -> jsonNotFound "Resource To Delete Not Found"
+                      0 -> jsonRes404 (justError "Resource To Delete Not Found")
                       _ -> noContent204
                   Left _  -> jsonServerError "Backend Failure"
               Nothing -> badJSONRequest
@@ -217,7 +217,8 @@ ip6ws req res = do
                         case toResource list addr' ttls src of
                           Just rsrc -> jsonOk (A.encode rsrc)
                           Nothing   -> jsonError ""
-                      Nothing  -> jsonNotFound "Resource Not Found"
+                      Nothing  ->
+                        jsonRes404 (resourceError list addr' "Resource Not Found")
                   Left _     -> jsonError "Error"
               Nothing -> jsonError "Not IPv6 Address in URI"
 
@@ -229,10 +230,9 @@ ip6ws req res = do
                   Right i ->
                     case i of
                       1 -> noContent204
-                      _ ->
-                        res $
-                          jsonRes status404 $
-                            resourceError list addr' "The Resource Doesn't Exist"
+                      _ -> 
+                        jsonRes404 $
+                          resourceError list addr' "The Resource Doesn't Already Exist"
                   Left _ -> jsonError "Error"
               Nothing -> jsonError "Not an IPv6 Address in URI"
 
@@ -248,18 +248,18 @@ ip6ws req res = do
 
       jsonRes400 bs = res (jsonRes status400 bs)
 
+      jsonRes404 bs = res (jsonRes status404 bs)
+
       badJSONRequest = jsonError "Bad JSON Request"
 
-      jsonError err = res (jsonRes status400 $ errorObject err)
+      jsonError err = res (jsonRes status400 $ justError err)
 
-      jsonNotFound msg = res (jsonRes status404 $ errorObject msg)
+      jsonServerError err = res (jsonRes status500 $ justError err)
 
-      jsonServerError err = res (jsonRes status500 $ errorObject err)
-
-      errorObject err = "{\"error\":\"" <> err <> "\"}"
+      justError err = "{\"error\":\"" <> err <> "\"}"
 
       methodNotAllowed =
-        res (jsonRes status405 $ errorObject "Method Not Allowed")
+        res (jsonRes status405 $ justError "Method Not Allowed")
 
       jsonRes status =
         responseLBS
@@ -273,7 +273,10 @@ ip6ws req res = do
           toJson Entry{..} (Just src) = do
             Env{..} <- ask
             liftIO (justResource redisConn list address src)
-          toJson Entry{..} Nothing = noResource list address
+          toJson Entry{..} Nothing =
+            return $
+              BSL.toStrict $
+                resourceError list (fromAddress address) "Resource Not Found"
 
       fromAddresses list (Addresses addrs) msrcs = do
         bsl <- zipWithM toJson addrs msrcs
@@ -282,25 +285,17 @@ ip6ws req res = do
           toJson addr (Just src) = do
             Env{..} <- ask
             liftIO (justResource redisConn list addr src)
-          toJson addr Nothing = noResource list addr
+          toJson (Address (IPv6Addr addr)) Nothing =
+            return $
+              BSL.toStrict (resourceError list addr "Resource Not Found")
 
       toJSONResources bsl =
         BSL.fromStrict $ "{\"resources\":[" <> intercalate "," bsl <> "]}"
 
       justResource conn list (Address (IPv6Addr addr)) src = do
         mttl <- ttlSource conn list addr
-        return
-          (BSL.toStrict $ encode $ fromJust $ toResource list addr mttl src)
-
-      -- TODO address may be not valid
-      noResource list (Address (IPv6Addr addr)) =
-        return
-          (  "{\"list\":\""
-          <> encodeUtf8 list
-          <> "\",\"address\":\""
-          <> encodeUtf8 addr
-          -- TODO
-          <> "\",\"error\":\"Resource Not Found\"}" )
+        return $
+          BSL.toStrict (encode $ fromJust $ toResource list addr mttl src)
 
       redisErrorToJson RedisError{ entry=Entry{..}, .. } =
         resourceError list (fromAddress address) error
