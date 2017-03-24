@@ -59,15 +59,21 @@ setSource conn mtd (Just Resource{ttl=ttlr,..}) = do
           R.Error err      -> Just (toRedisError list address err)
           R.Bulk Nothing   ->
             case mtd of
-              PUT  ->
-                Just (toRedisError list address "The Resource Doesn't Exist")
-              POST ->
-                Just (toRedisError list address "The Resource Already Exists")
+              PUT  -> Just $
+                toRedisError
+                  list
+                  address
+                  "The Resource Doesn't Exist Yet (Use POST To Create It)"
+              POST -> Just $
+                toRedisError
+                  list
+                  address
+                  "The Resource Already Exists (Use PUT To Replace It)"
               _    ->
                 Just (toRedisError list address "HTTP Method Not Handled")
           R.Bulk (Just bs) -> Just (toRedisError list address bs)
           _                ->
-            Just (toRedisError list address "Redis Type Error Not handled")
+            Just (toRedisError list address "Redis Type Error Not handled Yet")
 
 toRedisError :: T.Text -> Address -> BS.ByteString -> RedisError
 toRedisError list addr err =
