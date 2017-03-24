@@ -2,6 +2,7 @@ name:                ip6ws
 version:             0.1.0
 synopsis:            A RESTful Web Service for IPv6-related data
 description:         A RESTful Web Service for IPv6-related data
+                     using Redis as backend
 homepage:            https://github.com/MichelBoucey/ip6ws
 license:             BSD3
 license-file:        LICENSE
