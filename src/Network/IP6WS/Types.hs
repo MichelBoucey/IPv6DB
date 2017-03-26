@@ -29,13 +29,13 @@ instance FromJSON Entries where
   parseJSON (Array v) = do
     let ents = fromJSON <$> V.toList v
     if all isSuccess ents
-      then pure (Entries  $ toEnt <$> ents)
+      then pure (Entries  $ fromResult <$> ents)
       else fail "Malformed JSON Array"
   parseJSON _           = fail "JSON Array Expected"
 
-toEnt :: Result Entry -> Entry
-toEnt (A.Success e) = e
-toEnt (A.Error _)   = undefined
+fromResult :: Result a -> a
+fromResult (A.Success e) = e
+fromResult (A.Error _)   = undefined
 
 data Entry =
   Entry
@@ -61,10 +61,10 @@ data Addresses = Addresses [Address]
 
 instance FromJSON Addresses where
   parseJSON (Array v) = do
-    let mas = (\(String s) -> maybeIPv6Addr s) <$> V.toList v
-    if all isJust mas
-      then pure (Addresses $ (\(Just a) -> Address a) <$> mas)
-      else fail "Error Within JSON Array Of IPv6 Addresses"
+    let rslts = fromJSON <$> V.toList v
+    if all isSuccess rslts
+      then pure (Addresses $ fromResult <$> rslts)
+      else fail "Bad JSON Array Of IPv6 Addresses"
   parseJSON _           = fail "JSON Array Expected"
 
 data Source = Source !Value deriving (Eq, Show)
