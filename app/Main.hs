@@ -90,8 +90,8 @@ ipv6db req res = do
 
     where
 
-      getRequestBody :: FromJSON a => IO (Maybe a)
-      getRequestBody = A.decode <$> strictRequestBody req
+      maybeJSONBody :: FromJSON a => IO (Maybe a)
+      maybeJSONBody = A.decode <$> strictRequestBody req
 
       -- -----------------------------------------------------------------------
       -- URI Handlers                                                         --
@@ -102,8 +102,8 @@ ipv6db req res = do
         liftIO $ case mtd of
 
           mtd' | mtd' == PUT || mtd' == POST -> do
-            mrsrcs <- getRequestBody
-            case mrsrcs of
+            mjson <- maybeJSONBody
+            case mjson of
               Just (Resources rsrcs) -> do
                 results <- mapM (setSource redisConn mtd') rsrcs
                 if all (== RedisOk) results
@@ -112,20 +112,20 @@ ipv6db req res = do
               Nothing -> badJSONRequest
 
           GET -> do
-            ments <- getRequestBody
-            case ments of
+            mjson <- maybeJSONBody
+            case mjson of
               Just ents -> do
                 msrcs <- R.runRedis redisConn (getByEntries ents)
                 case msrcs of
                   Right srcs -> do
                     bs <- withEnv env (fromEntries ents srcs)
                     jsonOk bs
-                  Left  _   -> jsonError "Error"
+                  Left  _    -> jsonError "Error"
               Nothing -> badJSONRequest
 
           DELETE -> do
-            ments <- getRequestBody
-            case ments of
+            mjson <- maybeJSONBody
+            case mjson of
               Just ents -> do
                 ed <- R.runRedis redisConn (delByEntries ents)
                 case ed of
@@ -143,14 +143,14 @@ ipv6db req res = do
         liftIO $ case mtd of
 
           mtd' | mtd' == PUT || mtd' == POST -> do
-            rb <- getRequestBody
-            case rb of
+            mjson <- maybeJSONBody
+            case mjson of
               Just (Array v) -> do
                 let rsrcs =
                       (\o -> maybeResource o [("list",String list)]) <$> V.toList v
                 if Nothing `notElem` rsrcs
                   then do
-                    results <- mapM (setSource redisConn mtd'. fromJust) rsrcs
+                    results <- mapM (setSource redisConn mtd' . fromJust) rsrcs
                     if all (== RedisOk) results
                       then noContent204
                       else jsonRes400 (fromRedisErrors results)
@@ -158,8 +158,8 @@ ipv6db req res = do
               _              -> badJSONRequest
 
           GET -> do
-            maddrs <- getRequestBody
-            case maddrs of
+            mjson <- maybeJSONBody
+            case mjson of
               Just addrs -> do
                 emsrcs <- R.runRedis redisConn (getByAddresses list addrs)
                 case emsrcs of
@@ -169,8 +169,8 @@ ipv6db req res = do
               Nothing -> badJSONRequest
 
           DELETE -> do
-            maddrs <- getRequestBody
-            case maddrs of
+            mjson <- maybeJSONBody
+            case mjson of
               Just addrs -> do
                 ed <- R.runRedis redisConn (delByAddresses list addrs)
                 case ed of
@@ -188,8 +188,8 @@ ipv6db req res = do
         liftIO $ case mtd of
 
           mtd' | mtd' == PUT || mtd' == POST -> do
-            mo <- getRequestBody
-            case mo of
+            mjson <- maybeJSONBody
+            case mjson of
               Just o ->
                 case maybeResource o [("list",String list),("address",String addr)] of
                   Nothing -> jsonRes400 (justError "Bad JSON Request")
