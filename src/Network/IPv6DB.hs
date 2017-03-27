@@ -3,7 +3,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Network.IP6WS
+module Network.IPv6DB
   ( setSource
   , getSource
   , delSource
@@ -29,7 +29,7 @@ import           Database.Redis       as R hiding (decode)
 import           Network.HTTP.Types   (StdMethod(..))
 import           Text.IPv6Addr
 
-import           Network.IP6WS.Types  as I
+import           Network.IPv6DB.Types  as I
 import           Data.HashMap.Lazy
 
 setSource ::Connection -> StdMethod -> Resource -> IO RedisResponse

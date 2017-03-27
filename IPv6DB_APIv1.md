@@ -1,16 +1,16 @@
-# ip6ws APIv1
+# IPv6DB APIv1
 
 ## A RESTful Web service for IPv6-related data
 
 Default Web service port: 4446
 
-### /ip6ws/v1/list/\{*listName*\}/addresses/{*IPv6Address*}
+### /ipv6db/v1/list/\{*listName*\}/addresses/{*IPv6Address*}
 
-__POST /ip6ws/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
+__POST /ipv6db/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
 
 Create an IPv6 address with its related data to the given list.
 
-    POST /ip6ws/v1/list/hosts/addresses/abcd::1234
+    POST /ipv6db/v1/list/hosts/addresses/abcd::1234
 
 ```json
     {
@@ -22,12 +22,12 @@ Create an IPv6 address with its related data to the given list.
     }
 ```
 
-__PUT /ip6ws/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
+__PUT /ipv6db/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
 
 Replace an IPv6 address with its related data to the given list.
 
 ```
-    PUT /ip6ws/v1/list/hosts/addresses/abcd::1234
+    PUT /ipv6db/v1/list/hosts/addresses/abcd::1234
 ```
 
 ```json
@@ -44,10 +44,10 @@ Response:
 
 If successful, returns HTTP Status 204 No Content
 
-__GET /ip6ws/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
+__GET /ipv6db/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
 
 ```
-    GET /ip6ws/v1/list/hosts/addresses/abcd::1234
+    GET /ipv6db/v1/list/hosts/addresses/abcd::1234
 ```
 
 Response:
@@ -64,24 +64,24 @@ Response:
     }
 ```
 
-__DELETE /ip6ws/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
+__DELETE /ipv6db/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
 
 ```
-    DELETE /ip6ws/v1/hosts/addresses/abcd::1234
+    DELETE /ipv6db/v1/hosts/addresses/abcd::1234
 ```
 
 Response:
 
 If successful, returns an empty response body.
 
-### /ip6ws/v1/list/\{*listName*\}/addresses
+### /ipv6db/v1/list/\{*listName*\}/addresses
 
-__POST /ip6ws/v1/list/\{__*listName*__\}/addresses__
+__POST /ipv6db/v1/list/\{__*listName*__\}/addresses__
 
 Create many IPv6 addresses with their related data to the given list.
 
 ```json
-    POST /ip6ws/v1/hosts/addresses
+    POST /ipv6db/v1/hosts/addresses
     [
       {
         "address": "abcd::1234",
@@ -102,12 +102,12 @@ Create many IPv6 addresses with their related data to the given list.
     ]
 ```
 
-__PUT /ip6ws/v1/list/\{__*listName*__\}/addresses__
+__PUT /ipv6db/v1/list/\{__*listName*__\}/addresses__
 
 Replace many IPv6 addresses with their related data to the given list.
 
 ```json
-    PUT /ip6ws/v1/hosts/addresses
+    PUT /ipv6db/v1/hosts/addresses
     [
       {
         "address": "abcd::1234",
@@ -130,36 +130,36 @@ Replace many IPv6 addresses with their related data to the given list.
 
 Replace many IPv6 addresses with their related data to the given list.
 
-__GET /ip6ws/v1/list/\{__*listName*__\}/addresses__
+__GET /ipv6db/v1/list/\{__*listName*__\}/addresses__
 
 Get data related to the given IPv6address.
 
 ```json
-    GET /ip6ws/v1/hosts/addresses
+    GET /ipv6db/v1/hosts/addresses
     [
       "abcd::1234",
       "abcd::1235"
     ]
 ```
 
-__DELETE /ip6ws/v1/list/\{__*listName*__\}/addresses__
+__DELETE /ipv6db/v1/list/\{__*listName*__\}/addresses__
 
 Delete many IPv6 addresses from the given list.
 
 ```json
-    DELETE /ip6ws/v1/hosts/addresses
+    DELETE /ipv6db/v1/hosts/addresses
     [
       "abcd::1234",
       "abcd::1235"
     ]
 ```
 
-### /ip6ws/v1/batch
+### /ipv6db/v1/batch
 
-__PUT /ip6ws/v1/batch__
+__PUT /ipv6db/v1/batch__
 
 ```json
-    PUT /ip6ws/v1/batch
+    PUT /ipv6db/v1/batch
     [
       {
         "list": "hosts",
@@ -179,10 +179,10 @@ __PUT /ip6ws/v1/batch__
     ]
 ```
 
-__GET /ip6ws/v1/batch__
+__GET /ipv6db/v1/batch__
 
 ```json
-    GET /ip6ws/v1/batch
+    GET /ipv6db/v1/batch
     [
       {
         "list": "hosts",
@@ -195,10 +195,10 @@ __GET /ip6ws/v1/batch__
     ]
 ```
 
-__DELETE /ip6ws/v1/batch__
+__DELETE /ipv6db/v1/batch__
 
 ```json
-    DELETE /ip6ws/v1/batch
+    DELETE /ipv6db/v1/batch
     [
       {
         "list": "hosts",

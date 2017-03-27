@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE RecordWildCards       #-}
 
-module Network.IP6WS.Types where
+module Network.IPv6DB.Types where
 
 import           Data.Aeson      as A
 import qualified Data.ByteString as BS

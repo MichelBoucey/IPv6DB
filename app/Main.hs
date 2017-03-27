@@ -22,8 +22,8 @@ import           Options.Applicative      as O hiding (empty)
 import           Prelude                  hiding (error)
 import           Text.IPv6Addr
 
-import           Network.IP6WS
-import           Network.IP6WS.Types
+import           Network.IPv6DB
+import           Network.IPv6DB.Types
 
 data Options = Options { optPort :: Port }
 
@@ -31,7 +31,7 @@ opts :: ParserInfo Options
 opts = info (options <**> helper)
   ( fullDesc
   <> progDesc "RESTful Web Service for IPv6 related data"
-  <> header "ip6ws v1, (c) Michel Boucey 2017" )
+  <> header "IPv6DB v1, (c) Michel Boucey 2017" )
 
 options :: O.Parser Options
 options = Options <$> port
@@ -64,10 +64,10 @@ withEnv = flip runReaderT
 main :: IO ()
 main = do
   Options{..} <- execParser opts
-  run optPort ip6ws
+  run optPort ipv6db
 
-ip6ws :: Application
-ip6ws req res = do
+ipv6db :: Application
+ipv6db req res = do
   conn <- R.checkedConnect R.defaultConnectInfo
   withEnv Env { redisConn = conn } $
 
@@ -75,13 +75,13 @@ ip6ws req res = do
       Right mtd ->
         case pathInfo req of
 
-          ["ip6ws","v1","batch"] ->
+          ["ipv6db","v1","batch"] ->
             batchHandler mtd
 
-          ["ip6ws","v1","list",list,"addresses"] ->
+          ["ipv6db","v1","list",list,"addresses"] ->
             listHandler mtd list
 
-          ["ip6ws","v1","list",list,"addresses",addr] ->
+          ["ipv6db","v1","list",list,"addresses",addr] ->
             listAddressHandler mtd list addr
 
           _ -> liftIO $ jsonError "Bad URI Request"

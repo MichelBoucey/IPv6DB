@@ -1,7 +1,8 @@
-# ip6ws
+# IPv6DB
 
-## A RESTful Web service for IPv6 related data [![Build Status](https://travis-ci.org/MichelBoucey/ip6ws.svg?branch=master)](https://travis-ci.org/MichelBoucey/ip6ws)
+## A RESTful Web service for IPv6 related data [![Build Status](https://travis-ci.org/MichelBoucey/IPv6DB.svg?branch=master)](https://travis-ci.org/MichelBoucey/IPv6DB)
 
-[ip6ws API Description](https://github.com/MichelBoucey/ip6ws/blob/master/ip6ws_APIv1.md)
+See [IPv6DB API](https://github.com/MichelBoucey/IPv6DB/blob/master/IPv6DB_APIv1.md).
 
 ## No release yet! Work In Progress.
+

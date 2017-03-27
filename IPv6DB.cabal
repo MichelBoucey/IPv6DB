@@ -1,28 +1,28 @@
-name:                ip6ws
+name:                IPv6DB
 version:             0.1.0
 synopsis:            A RESTful Web Service for IPv6-related data
 description:         A RESTful Web Service for IPv6-related data
                      using Redis as backend
-homepage:            https://github.com/MichelBoucey/ip6ws
+homepage:            https://github.com/MichelBoucey/IPv6DB
 license:             BSD3
 license-file:        LICENSE
 author:              Michel Boucey
 maintainer:          michel.boucey@cybervisible.fr
 copyright:           (c) 2017 - Michel Boucey
-category:            network, Database
+category:            network, database
 build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
-                   , ip6ws_APIv1.md
+                   , IPv6DB_APIv1.md
 
 Source-Repository head
   Type: git
-  Location: https://github.com/MichelBoucey/ip6ws.git
+  Location: https://github.com/MichelBoucey/IPv6DB.git
 
 library
   hs-source-dirs:     src
-  exposed-modules:    Network.IP6WS.Types 
-                    , Network.IP6WS
+  exposed-modules:    Network.IPv6DB.Types 
+                    , Network.IPv6DB
   build-depends:      aeson                >= 0.11.2 && < 1.2
                     , attoparsec           >= 0.13.1.0 && < 0.14
                     , base                 >= 4.9.0 && < 5.0
@@ -36,14 +36,14 @@ library
                     , vector               >= 0.11.0.0 && < 0.12
   default-language: Haskell2010
 
-executable ip6ws
+executable ipv6db
   hs-source-dirs:     app
   main-is:            Main.hs
   build-depends:      aeson                >= 0.11.2 && < 1.2
                     , base                 >= 4.9.0 && < 5.0
                     , bytestring           >= 0.10.6 && < 0.11
                     , IPv6Addr             >= 0.6.2 && < 0.7
-                    , ip6ws
+                    , IPv6DB
                     , hedis                >= 0.9.4 && < 0.10
                     , http-types           >= 0.9.1 && < 0.10
                     , unordered-containers >= 0.2.7.2 && < 0.2.8
