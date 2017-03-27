@@ -8,9 +8,9 @@ import           Control.Monad            (zipWithM)
 import           Control.Monad.IO.Class   (liftIO)
 import           Control.Monad.Reader
 import           Data.Aeson               as A
-import           Data.ByteString          hiding (all, notElem, zipWith)
+import           Data.ByteString          hiding (all, filter, notElem, zipWith)
 import qualified Data.ByteString.Lazy     as BSL
-import           Data.Maybe
+import           Data.Maybe               (fromJust)
 import           Data.Monoid              ((<>))
 import           Data.Text.Encoding
 import qualified Data.Vector              as V
@@ -47,8 +47,8 @@ port = O.option auto
 
 {- TODO
  - command line options
-  -v --version
-  -redis-database
+  --version -v
+  --redis-database
   --redis-port
   --redis-host
   --redis-auth
@@ -106,7 +106,7 @@ ip6ws req res = do
             case mrsrcs of
               Just (Resources rsrcs) -> do
                 --TODO!
-                mapM_ (setSource redisConn mtd' . Just) rsrcs
+                mapM_ (setSource redisConn mtd') rsrcs
                 noContent204
   {-
                 errs <-mapM (setSource conn mtd') rsrcs
@@ -150,14 +150,15 @@ ip6ws req res = do
           mtd' | mtd' == PUT || mtd' == POST -> do
             rb <- getRBreq
             case rb of
-              Just (Array vv) -> do
-                let rsrcs = (\obj -> maybeResource obj [("list",String list)]) <$> V.toList vv
+              Just (Array v) -> do
+                let rsrcs =
+                      (\o -> maybeResource o [("list",String list)]) <$> V.toList v
                 if Nothing `notElem` rsrcs
                   then do
-                    merrs <- mapM (setSource redisConn mtd') rsrcs
-                    if all (== Nothing) merrs
+                    rdress <- mapM (setSource redisConn mtd'. fromJust) rsrcs
+                    if all (== RedisOk) rdress
                       then noContent204
-                      else jsonError "Compile errors to json"-- TODO errors treatment here
+                      else jsonRes400 (fromRedisErrors rdress)
                   else badJSONRequest
               _               -> badJSONRequest
 
@@ -192,17 +193,16 @@ ip6ws req res = do
         liftIO $ case mtd of
 
           mtd' | mtd' == PUT || mtd' == POST -> do
-            mjsono <- getRBreq
-            case mjsono of
-              Just jsono ->
-                case maybeResource jsono [("list",String list),("address",String addr)] of
-                  jrsrc@(Just _) -> do
-                    ssr <- setSource redisConn mtd' jrsrc
-                    case ssr of
-                      Just RedisOk           -> noContent204
-                      Just (re@RedisError{}) -> jsonRes400 (redisErrorToJson re)
-                      Nothing                -> jsonError "UNDEFINED"
-                  Nothing -> jsonError "Bad JSON Request"
+            mo <- getRBreq
+            case mo of
+              Just o ->
+                case maybeResource o [("list",String list),("address",String addr)] of
+                  Nothing -> jsonRes400 (justError "Bad JSON Request")
+                  Just rsrc   -> do
+                    rdres <- setSource redisConn mtd' rsrc
+                    case rdres of
+                      RedisOk -> noContent204
+                      error   -> jsonRes400 (redisErrorToJson error)
               Nothing -> badJSONRequest
 
           GET ->
@@ -216,7 +216,7 @@ ip6ws req res = do
                         ttls <- ttlSource redisConn list addr'
                         case toResource list addr' ttls src of
                           Just rsrc -> jsonOk (A.encode rsrc)
-                          Nothing   -> jsonError ""
+                          Nothing   -> jsonError ""-- TODO!
                       Nothing  ->
                         jsonRes404 (resourceError list addr' "Resource Not Found")
                   Left _     -> jsonError "Error"
@@ -230,10 +230,10 @@ ip6ws req res = do
                   Right i ->
                     case i of
                       1 -> noContent204
-                      _ -> 
+                      _ ->
                         jsonRes404 $
                           resourceError list addr' "The Resource Doesn't Already Exist"
-                  Left _ -> jsonError "Error"
+                  Left _ -> jsonError "Error"--TODO!
               Nothing -> jsonError "Not an IPv6 Address in URI"
 
           _      -> methodNotAllowed
@@ -299,9 +299,14 @@ ip6ws req res = do
 
       redisErrorToJson RedisError{ entry=Entry{..}, .. } =
         resourceError list (fromAddress address) error
-      redisErrorToJson RedisOk = undefined
+      redisErrorToJson RedisOk = BSL.empty
 
       resourceError list addr err = BSL.fromStrict $
         "{\"list\":\"" <> encodeUtf8 list <> "\",\"address\":\""
         <> encodeUtf8 addr <> "\",\"error\":\"" <> err <> "\"}"
+
+      fromRedisErrors errs =
+        "{\"errors\":[" <>
+        BSL.intercalate "," (filter (/= BSL.empty) $ redisErrorToJson <$> errs)
+        <> "]}"
 
