@@ -32,9 +32,8 @@ import           Text.IPv6Addr
 import           Network.IP6WS.Types  as I
 import           Data.HashMap.Lazy
 
-setSource ::Connection -> StdMethod -> Maybe Resource -> IO (Maybe RedisError)
-setSource _ _ Nothing = pure Nothing
-setSource conn mtd (Just Resource{ttl=ttlr,..}) = do
+setSource ::Connection -> StdMethod -> Resource -> IO RedisResponse
+setSource conn mtd Resource{ttl=ttlr,..} = do
   er <- runRedis conn $ setOpts
           (toKey list $ fromAddress address)
           (BSL.toStrict $ encode source)
@@ -51,33 +50,41 @@ setSource conn mtd (Just Resource{ttl=ttlr,..}) = do
     case er of
       Right s ->
         case s of
-          Ok            -> Just RedisOk
-          Status status -> Just (toRedisError list address status)
-          Pong          -> Just (toRedisError list address "Ping!")
+          Ok            -> RedisOk
+          Status status -> toRedisError list address status
+          Pong          -> toRedisError list address "Ping!"
       Left r ->
         case r of
-          R.Error err      -> Just (toRedisError list address err)
-          R.Bulk Nothing   ->
+          R.Error err    -> toRedisError list address err
+          R.Bulk Nothing ->
             case mtd of
-              PUT  -> Just $
+              PUT  ->
                 toRedisError
                   list
                   address
                   "The Resource Doesn't Exist Yet (Use POST To Create It)"
-              POST -> Just $
+              POST ->
                 toRedisError
                   list
                   address
                   "The Resource Already Exists (Use PUT To Replace It)"
               _    ->
-                Just (toRedisError list address "HTTP Method Not Handled")
-          R.Bulk (Just bs) -> Just (toRedisError list address bs)
+                toRedisError
+                  list
+                  address
+                  "HTTP Method Not Handled"
+          R.Bulk (Just bs) -> toRedisError list address bs
           _                ->
-            Just (toRedisError list address "Redis Type Error Not handled Yet")
+            toRedisError
+                list
+                address
+                "Undefined Redis Error"
 
-toRedisError :: T.Text -> Address -> BS.ByteString -> RedisError
+toRedisError :: T.Text -> Address -> BS.ByteString -> RedisResponse
 toRedisError list addr err =
-  RedisError { entry = toEntry list addr, error = err }
+  RedisError
+    { entry = toEntry list addr
+    , error = err }
 
 ttlSource :: Connection
           -> T.Text
