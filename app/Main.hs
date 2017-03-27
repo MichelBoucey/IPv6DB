@@ -90,8 +90,8 @@ ipv6db req res = do
 
     where
 
-      getRBreq :: FromJSON a => IO (Maybe a)
-      getRBreq = A.decode <$> strictRequestBody req
+      getRequestBody :: FromJSON a => IO (Maybe a)
+      getRequestBody = A.decode <$> strictRequestBody req
 
       -- -----------------------------------------------------------------------
       -- URI Handlers                                                         --
@@ -102,22 +102,17 @@ ipv6db req res = do
         liftIO $ case mtd of
 
           mtd' | mtd' == PUT || mtd' == POST -> do
-            mrsrcs <- getRBreq
+            mrsrcs <- getRequestBody
             case mrsrcs of
               Just (Resources rsrcs) -> do
-                --TODO!
-                mapM_ (setSource redisConn mtd') rsrcs
-                noContent204
-  {-
-                errs <-mapM (setSource conn mtd') rsrcs
-                case errs of
-                  [] -> noContent204
-                  _ -> jsonError "Send array of errors"
-  -}
+                results <- mapM (setSource redisConn mtd') rsrcs
+                if all (== RedisOk) results
+                  then noContent204
+                  else jsonRes400 (fromRedisErrors results)
               Nothing -> badJSONRequest
 
           GET -> do
-            ments <- getRBreq
+            ments <- getRequestBody
             case ments of
               Just ents -> do
                 msrcs <- R.runRedis redisConn (getByEntries ents)
@@ -129,7 +124,7 @@ ipv6db req res = do
               Nothing -> badJSONRequest
 
           DELETE -> do
-            ments <- getRBreq
+            ments <- getRequestBody
             case ments of
               Just ents -> do
                 ed <- R.runRedis redisConn (delByEntries ents)
@@ -148,33 +143,33 @@ ipv6db req res = do
         liftIO $ case mtd of
 
           mtd' | mtd' == PUT || mtd' == POST -> do
-            rb <- getRBreq
+            rb <- getRequestBody
             case rb of
               Just (Array v) -> do
                 let rsrcs =
                       (\o -> maybeResource o [("list",String list)]) <$> V.toList v
                 if Nothing `notElem` rsrcs
                   then do
-                    rdress <- mapM (setSource redisConn mtd'. fromJust) rsrcs
-                    if all (== RedisOk) rdress
+                    results <- mapM (setSource redisConn mtd'. fromJust) rsrcs
+                    if all (== RedisOk) results
                       then noContent204
-                      else jsonRes400 (fromRedisErrors rdress)
+                      else jsonRes400 (fromRedisErrors results)
                   else badJSONRequest
-              _               -> badJSONRequest
+              _              -> badJSONRequest
 
           GET -> do
-            maddrs <- getRBreq
+            maddrs <- getRequestBody
             case maddrs of
               Just addrs -> do
-                emrs <- R.runRedis redisConn (getByAddresses list addrs)
-                case emrs of
-                  Right mrs ->
-                    withEnv env (fromAddresses list addrs mrs) >>= jsonOk
-                  Left  _   -> jsonServerError "Backend Failure"
+                emsrcs <- R.runRedis redisConn (getByAddresses list addrs)
+                case emsrcs of
+                  Right msrcs ->
+                    withEnv env (fromAddresses list addrs msrcs) >>= jsonOk
+                  Left  _     -> jsonServerError "Backend Failure"
               Nothing -> badJSONRequest
 
           DELETE -> do
-            maddrs <- getRBreq
+            maddrs <- getRequestBody
             case maddrs of
               Just addrs -> do
                 ed <- R.runRedis redisConn (delByAddresses list addrs)
@@ -193,7 +188,7 @@ ipv6db req res = do
         liftIO $ case mtd of
 
           mtd' | mtd' == PUT || mtd' == POST -> do
-            mo <- getRBreq
+            mo <- getRequestBody
             case mo of
               Just o ->
                 case maybeResource o [("list",String list),("address",String addr)] of
@@ -289,6 +284,11 @@ ipv6db req res = do
             return $
               BSL.toStrict (resourceError list addr "Resource Not Found")
 
+      fromRedisErrors errs =
+        "{\"errors\":[" <>
+        BSL.intercalate "," (filter (/= BSL.empty) $ redisErrorToJson <$> errs)
+        <> "]}"
+
       toJSONResources bsl =
         BSL.fromStrict $ "{\"resources\":[" <> intercalate "," bsl <> "]}"
 
@@ -304,9 +304,4 @@ ipv6db req res = do
       resourceError list addr err = BSL.fromStrict $
         "{\"list\":\"" <> encodeUtf8 list <> "\",\"address\":\""
         <> encodeUtf8 addr <> "\",\"error\":\"" <> err <> "\"}"
-
-      fromRedisErrors errs =
-        "{\"errors\":[" <>
-        BSL.intercalate "," (filter (/= BSL.empty) $ redisErrorToJson <$> errs)
-        <> "]}"
 

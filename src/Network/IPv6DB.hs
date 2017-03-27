@@ -1,7 +1,8 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE RecordWildCards       #-}
 
 module Network.IPv6DB
   ( setSource
@@ -22,15 +23,15 @@ module Network.IPv6DB
 import           Data.Aeson           as A
 import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
+import           Data.HashMap.Lazy
 import           Data.Monoid          ((<>))
 import qualified Data.Text            as T
 import           Data.Text.Encoding
 import           Database.Redis       as R hiding (decode)
-import           Network.HTTP.Types   (StdMethod(..))
+import           Network.HTTP.Types   (StdMethod (..))
 import           Text.IPv6Addr
 
-import           Network.IPv6DB.Types  as I
-import           Data.HashMap.Lazy
+import           Network.IPv6DB.Types as I
 
 setSource ::Connection -> StdMethod -> Resource -> IO RedisResponse
 setSource conn mtd Resource{ttl=ttlr,..} = do
