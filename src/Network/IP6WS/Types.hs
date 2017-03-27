@@ -6,7 +6,6 @@ module Network.IP6WS.Types where
 
 import           Data.Aeson      as A
 import qualified Data.ByteString as BS
-import           Data.Maybe      (isJust)
 import qualified Data.Text       as T
 import qualified Data.Vector     as V
 import           Text.IPv6Addr
@@ -29,18 +28,14 @@ instance FromJSON Entries where
   parseJSON (Array v) = do
     let ents = fromJSON <$> V.toList v
     if all isSuccess ents
-      then pure (Entries  $ fromResult <$> ents)
+      then pure (Entries $ fromResult <$> ents)
       else fail "Malformed JSON Array"
   parseJSON _           = fail "JSON Array Expected"
-
-fromResult :: Result a -> a
-fromResult (A.Success e) = e
-fromResult (A.Error _)   = undefined
 
 data Entry =
   Entry
     { list    :: !T.Text
-    , address :: Address
+    , address :: !Address
     } deriving (Eq, Show)
 
 instance FromJSON Entry where
@@ -50,10 +45,10 @@ instance FromJSON Entry where
     pure Entry{..}
   parseJSON _          = fail "JSON Object Expected"
 
-data RedisError =
+data RedisResponse =
   RedisError
-    { entry :: Entry
-    , error :: BS.ByteString
+    { entry :: !Entry
+    , error :: !BS.ByteString
     }
   | RedisOk deriving (Eq, Show)
 
@@ -65,7 +60,7 @@ instance FromJSON Addresses where
     if all isSuccess rslts
       then pure (Addresses $ fromResult <$> rslts)
       else fail "Bad JSON Array Of IPv6 Addresses"
-  parseJSON _           = fail "JSON Array Expected"
+  parseJSON _         = fail "JSON Array Expected"
 
 data Source = Source !Value deriving (Eq, Show)
 
@@ -127,4 +122,8 @@ isSuccess (A.Error _)   = False
 toRsrc :: Result Resource -> Resource
 toRsrc (A.Success r) = r
 toRsrc (A.Error _)   = undefined
+
+fromResult :: Result a -> a
+fromResult (A.Success e) = e
+fromResult (A.Error _)   = undefined
 
