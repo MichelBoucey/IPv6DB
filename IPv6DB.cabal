@@ -33,7 +33,7 @@ library
                     , unordered-containers >= 0.2.7.2 && < 0.2.9
                     , mtl                  >= 2.2.1 && < 2.3
                     , text                 >= 1.2.2 && < 1.3
-                    , vector               >= 0.11.0.0 && < 0.12
+                    , vector               >= 0.11.0.0 && < 0.13
   default-language: Haskell2010
 
 executable ipv6db
@@ -50,7 +50,7 @@ executable ipv6db
                     , mtl                  >= 2.2.1 && < 2.3
                     , optparse-applicative >= 0.12.1.0 && < 0.14
                     , text                 >= 1.2.2 && < 1.3
-                    , vector               >= 0.11.0.0 && < 0.12
+                    , vector               >= 0.11.0.0 && < 0.13
                     , wai                  >= 3.2.1 && < 3.3
                     , warp                 >= 3.2.9 && < 3.3
 
