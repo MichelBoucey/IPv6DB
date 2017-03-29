@@ -18,64 +18,14 @@ import qualified Database.Redis           as R
 import           Network.HTTP.Types       hiding (noContent204)
 import           Network.Wai
 import           Network.Wai.Handler.Warp
-import           Options.Applicative      as O hiding (empty)
+import           Options.Applicative      (execParser)
 import           Prelude                  hiding (error)
 import           Text.IPv6Addr
 
+import           Options
+
 import           Network.IPv6DB
 import           Network.IPv6DB.Types
-
-data Options =
-  Options
-    { appPort       :: Int
-    , redisHost     :: String
-    , redisPort     :: Integer
-    , redisDatabase :: Integer
-    , redisAuth     :: Maybe ByteString
-    }
-
-opts :: ParserInfo Options
-opts = info (options <**> helper)
-  ( fullDesc
-    <> progDesc "RESTful Web Service for IPv6 related data"
-    <> header "IPv6DB v0.1.0 APIv1, (c) Michel Boucey 2017" )
-
-options :: O.Parser Options
-options =
-  Options
-    <$>
-      O.option auto
-        ( short 'p'
-          <> long "port"
-          <> help "Alternative listening port"
-          <> showDefault
-          <> value 4446
-          <> metavar "" )
-    <*>
-      O.strOption
-        ( long "redis-host"
-          <> help "Redis host"
-          <> showDefault
-          <> value "localhost" )
-    <*>
-      O.option auto
-        ( short 'p'
-          <> long "port"
-          <> help "Redis listening port"
-          <> showDefault
-          <> value 6379
-          <> metavar "" )
-    <*>
-      O.option auto
-        ( long "redis-database"
-          <> help "Redis database"
-          <> showDefault
-          <> value 0 )
-    <*>
-      O.option auto
-        ( long "redis-auth"
-          <> help "Redis authentication password"
-          <> value Nothing )
 
 data Env = Env { redisConn :: R.Connection }
 
