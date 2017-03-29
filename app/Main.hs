@@ -25,34 +25,57 @@ import           Text.IPv6Addr
 import           Network.IPv6DB
 import           Network.IPv6DB.Types
 
-data Options = Options { optPort :: Port }
+data Options =
+  Options
+    { appPort       :: Int
+    , redisHost     :: String
+    , redisPort     :: Integer
+    , redisDatabase :: Integer
+    , redisAuth     :: Maybe ByteString
+    }
 
 opts :: ParserInfo Options
 opts = info (options <**> helper)
   ( fullDesc
-  <> progDesc "RESTful Web Service for IPv6 related data"
-  <> header "IPv6DB v1, (c) Michel Boucey 2017" )
+    <> progDesc "RESTful Web Service for IPv6 related data"
+    <> header "IPv6DB v0.1.0 APIv1, (c) Michel Boucey 2017" )
 
 options :: O.Parser Options
-options = Options <$> port
-
-port :: O.Parser Int
-port = O.option auto
-  ( short 'p'
-  <> long "port"
-  <> help "Alternative listening port"
-  <> showDefault
-  <> value 4446
-  <> metavar "" )
-
-{- TODO
- - command line options
-  --version -v
-  --redis-database
-  --redis-port
-  --redis-host
-  --redis-auth
--}
+options =
+  Options
+    <$>
+      O.option auto
+        ( short 'p'
+          <> long "port"
+          <> help "Alternative listening port"
+          <> showDefault
+          <> value 4446
+          <> metavar "" )
+    <*>
+      O.strOption
+        ( long "redis-host"
+          <> help "Redis host"
+          <> showDefault
+          <> value "localhost" )
+    <*>
+      O.option auto
+        ( short 'p'
+          <> long "port"
+          <> help "Redis listening port"
+          <> showDefault
+          <> value 6379
+          <> metavar "" )
+    <*>
+      O.option auto
+        ( long "redis-database"
+          <> help "Redis database"
+          <> showDefault
+          <> value 0 )
+    <*>
+      O.option auto
+        ( long "redis-auth"
+          <> help "Redis authentication password"
+          <> value Nothing )
 
 data Env = Env { redisConn :: R.Connection }
 
@@ -64,14 +87,21 @@ withEnv = flip runReaderT
 main :: IO ()
 main = do
   Options{..} <- execParser opts
-  run optPort ipv6db
+  run appPort ipv6db
 
 ipv6db :: Application
 ipv6db req res = do
-  conn <- R.checkedConnect R.defaultConnectInfo
+  Options{..} <- execParser opts
+  conn <- R.checkedConnect $
+    R.defaultConnectInfo
+      { R.connectHost     = redisHost
+      , R.connectPort     = R.PortNumber (fromInteger redisPort)
+      , R.connectAuth     = redisAuth
+      , R.connectDatabase = redisDatabase }
   withEnv Env { redisConn = conn } $
 
     case parseMethod (requestMethod req) of
+
       Right mtd ->
         case pathInfo req of
 
@@ -135,7 +165,6 @@ ipv6db req res = do
                       _ -> noContent204
                   Left _  -> jsonError "Error"
               Nothing -> badJSONRequest
-
           _      -> methodNotAllowed
 
       listHandler mtd list = do
@@ -180,7 +209,6 @@ ipv6db req res = do
                       _ -> noContent204
                   Left _  -> jsonServerError "Backend Failure"
               Nothing -> badJSONRequest
-
           _      -> methodNotAllowed
 
       listAddressHandler mtd list addr = do
@@ -230,7 +258,6 @@ ipv6db req res = do
                           resourceError list addr' "The Resource Doesn't Already Exist"
                   Left _ -> jsonError "Error"--TODO!
               Nothing -> jsonError "Not an IPv6 Address in URI"
-
           _      -> methodNotAllowed
 
       -- -----------------------------------------------------------------------
