@@ -2,6 +2,7 @@
 module Options where
 
 import           Data.ByteString
+import           Data.Monoid         ((<>))
 import           Options.Applicative
 
 data Options =
