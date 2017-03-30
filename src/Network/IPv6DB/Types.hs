@@ -8,6 +8,7 @@ import           Data.Aeson      as A
 import qualified Data.ByteString as BS
 import qualified Data.Text       as T
 import qualified Data.Vector     as V
+import           Prelude         hiding (error)
 import           Text.IPv6Addr
 
 newtype Address = Address IPv6Addr deriving (Eq, Show)
@@ -46,10 +47,10 @@ instance FromJSON Entry where
   parseJSON _          = fail "JSON Object Expected"
 
 data RedisResponse =
-  RedisError
-    { entry :: !Entry
-    , error :: !BS.ByteString
-    }
+    RedisError
+      { entry :: !Entry
+      , error :: !BS.ByteString
+      }
   | RedisOk deriving (Eq, Show)
 
 data Addresses = Addresses [Address]
@@ -71,12 +72,18 @@ instance FromJSON Source where
   parseJSON v = pure (Source v)
 
 data Resource =
-  Resource
-    { list    :: !T.Text
-    , address :: !Address
-    , ttl     :: !(Maybe Integer)
-    , source  :: !Source
-    } deriving (Eq, Show)
+    Resource
+      { list    :: !T.Text
+      , address :: !Address
+      , ttl     :: !(Maybe Integer)
+      , source  :: !Source
+      }
+  | ResourceError
+      { list    :: !T.Text
+      , address :: !Address
+      , error   :: !T.Text
+      } 
+  deriving (Eq, Show)
 
 instance ToJSON Resource where
   toJSON Resource{..} =
@@ -85,6 +92,12 @@ instance ToJSON Resource where
       , "address" .= address
       , "ttl"     .= ttl
       , "source"  .= source
+      ]
+  toJSON ResourceError{..} =
+    object
+      [ "list"    .= list
+      , "address" .= address
+      , "error"   .= error
       ]
 
 instance FromJSON Resource where

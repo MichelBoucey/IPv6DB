@@ -8,7 +8,6 @@ import           Control.Monad            (zipWithM)
 import           Control.Monad.IO.Class   (liftIO)
 import           Control.Monad.Reader
 import           Data.Aeson               as A
-import           Data.ByteString          hiding (all, filter, notElem, zipWith)
 import qualified Data.ByteString.Lazy     as BSL
 import           Data.Maybe               (fromJust)
 import           Data.Monoid              ((<>))
@@ -238,41 +237,32 @@ ipv6db req res = do
           status
           [ ("Content-Type", "application/json; charset=utf-8") ]
 
-      fromEntries (Entries ents) msrcs = do
-        bsl <- zipWithM toJson ents msrcs
-        return (toJSONResources bsl)
+      fromEntries (Entries ents) msrcs =
+        encode <$> zipWithM toJson ents msrcs
         where
           toJson Entry{..} (Just src) = do
             Env{..} <- ask
-            liftIO (justResource redisConn list address src)
+            liftIO (buildResource redisConn list address src)
           toJson Entry{..} Nothing =
-            return $
-              BSL.toStrict $
-                resourceError list (fromAddress address) "Resource Not Found"
+            return $ ResourceError list address "Resource Not Found"
 
-      fromAddresses list (Addresses addrs) msrcs = do
-        bsl <- zipWithM toJson addrs msrcs
-        return (toJSONResources bsl)
+      fromAddresses list (Addresses addrs) msrcs =
+        encode <$> zipWithM toJson addrs msrcs
         where
           toJson addr (Just src) = do
             Env{..} <- ask
-            liftIO (justResource redisConn list addr src)
-          toJson (Address (IPv6Addr addr)) Nothing =
-            return $
-              BSL.toStrict (resourceError list addr "Resource Not Found")
+            liftIO (buildResource redisConn list addr src)
+          toJson addr Nothing =
+            return $ ResourceError list addr "Resource Not Found"
 
       fromRedisErrors errs =
         "{\"errors\":[" <>
         BSL.intercalate "," (filter (/= BSL.empty) $ redisErrorToJson <$> errs)
         <> "]}"
 
-      toJSONResources bsl =
-        BSL.fromStrict $ "{\"resources\":[" <> intercalate "," bsl <> "]}"
-
-      justResource conn list (Address (IPv6Addr addr)) src = do
+      buildResource conn list (Address (IPv6Addr addr)) src = do
         mttl <- ttlSource conn list addr
-        return $
-          BSL.toStrict (encode $ fromJust $ toResource list addr mttl src)
+        return (fromJust $ toResource list addr mttl src)
 
       redisErrorToJson RedisError{ entry=Entry{..}, .. } =
         resourceError list (fromAddress address) error
