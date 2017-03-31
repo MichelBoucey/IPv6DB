@@ -52,6 +52,7 @@ ipv6db req res = do
     case parseMethod (requestMethod req) of
 
       Right mtd ->
+
         case pathInfo req of
 
           ["ipv6db","v1","batch"] ->
@@ -87,7 +88,7 @@ ipv6db req res = do
                 results <- mapM (setSource redisConn mtd') rsrcs
                 if all (== RedisOk) results
                   then noContent204
-                  else jsonRes400 (fromRedisErrors results)
+                  else jsonRes400 (encode results)
               Nothing -> badJSONRequest
 
           GET -> do
@@ -96,9 +97,8 @@ ipv6db req res = do
               Just ents -> do
                 msrcs <- R.runRedis redisConn (getByEntries ents)
                 case msrcs of
-                  Right srcs -> do
-                    bs <- withEnv env (fromEntries ents srcs)
-                    jsonOk bs
+                  Right srcs ->
+                    withEnv env (fromEntries ents srcs) >>= jsonOk
                   Left  _    -> jsonError "Error"
               Nothing -> badJSONRequest
 
@@ -131,7 +131,7 @@ ipv6db req res = do
                     results <- mapM (setSource redisConn mtd' . fromJust) rsrcs
                     if all (== RedisOk) results
                       then noContent204
-                      else jsonRes400 (fromRedisErrors results)
+                      else jsonRes400 (encode results)
                   else badJSONRequest
               _              -> badJSONRequest
 
@@ -174,7 +174,7 @@ ipv6db req res = do
                     rdres <- setSource redisConn mtd' rsrc
                     case rdres of
                       RedisOk -> noContent204
-                      error   -> jsonRes400 (redisErrorToJson error)
+                      error   -> jsonRes400 (encode error)
               Nothing -> badJSONRequest
 
           GET ->
@@ -190,7 +190,12 @@ ipv6db req res = do
                           Just rsrc -> jsonOk (A.encode rsrc)
                           Nothing   -> jsonError ""-- TODO!
                       Nothing  ->
-                        jsonRes404 (resourceError list addr' "Resource Not Found")
+                        jsonRes404 $
+                          encode $
+                            ResourceError
+                              list
+                              (Address $ IPv6Addr addr')
+                              "Resource Not Found"
                   Left _     -> jsonError "Error"
               Nothing -> jsonError "Not IPv6 Address in URI"
 
@@ -204,7 +209,11 @@ ipv6db req res = do
                       1 -> noContent204
                       _ ->
                         jsonRes404 $
-                          resourceError list addr' "The Resource Doesn't Already Exist"
+                          encode $
+                            ResourceError
+                              list
+                              (Address (IPv6Addr addr'))
+                              "The Resource Doesn't Already Exist"
                   Left _ -> jsonError "Error"--TODO!
               Nothing -> jsonError "Not an IPv6 Address in URI"
           _      -> methodNotAllowed
@@ -244,7 +253,7 @@ ipv6db req res = do
             Env{..} <- ask
             liftIO (buildResource redisConn list address src)
           toJson Entry{..} Nothing =
-            return $ ResourceError list address "Resource Not Found"
+            return (ResourceError list address "Resource Not Found")
 
       fromAddresses list (Addresses addrs) msrcs =
         encode <$> zipWithM toJson addrs msrcs
@@ -253,22 +262,9 @@ ipv6db req res = do
             Env{..} <- ask
             liftIO (buildResource redisConn list addr src)
           toJson addr Nothing =
-            return $ ResourceError list addr "Resource Not Found"
-
-      fromRedisErrors errs =
-        "{\"errors\":[" <>
-        BSL.intercalate "," (filter (/= BSL.empty) $ redisErrorToJson <$> errs)
-        <> "]}"
+            return (ResourceError list addr "Resource Not Found")
 
       buildResource conn list (Address (IPv6Addr addr)) src = do
         mttl <- ttlSource conn list addr
         return (fromJust $ toResource list addr mttl src)
-
-      redisErrorToJson RedisError{ entry=Entry{..}, .. } =
-        resourceError list (fromAddress address) error
-      redisErrorToJson RedisOk = BSL.empty
-
-      resourceError list addr err = BSL.fromStrict $
-        "{\"list\":\"" <> encodeUtf8 list <> "\",\"address\":\""
-        <> encodeUtf8 addr <> "\",\"error\":\"" <> err <> "\"}"
 

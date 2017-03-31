@@ -7,6 +7,7 @@ module Network.IPv6DB.Types where
 import           Data.Aeson      as A
 import qualified Data.ByteString as BS
 import qualified Data.Text       as T
+import           Data.Text.Encoding
 import qualified Data.Vector     as V
 import           Prelude         hiding (error)
 import           Text.IPv6Addr
@@ -46,12 +47,28 @@ instance FromJSON Entry where
     pure Entry{..}
   parseJSON _          = fail "JSON Object Expected"
 
-data RedisResponse =
-    RedisError
+data RedisResponse
+  = RedisOk
+  | RedisError
       { entry :: !Entry
       , error :: !BS.ByteString
       }
-  | RedisOk deriving (Eq, Show)
+   deriving (Eq, Show)
+
+instance ToJSON RedisResponse where
+  toJSON (RedisError{ entry=Entry{..}, .. }) =
+    object 
+      [ "list"    .= list
+      , "address" .= address
+      , "error"   .= decodeUtf8 error
+      ]
+  toJSON _ = Null
+
+data RedisErrors = RedisErrors [RedisResponse] deriving (Eq, Show)
+
+instance ToJSON RedisErrors where
+  toJSON (RedisErrors rrs) =
+    object [ ("errors", Array (V.fromList $ toJSON <$> rrs)) ]
 
 data Addresses = Addresses [Address]
 
@@ -71,8 +88,8 @@ instance ToJSON Source where
 instance FromJSON Source where
   parseJSON v = pure (Source v)
 
-data Resource =
-    Resource
+data Resource
+  = Resource
       { list    :: !T.Text
       , address :: !Address
       , ttl     :: !(Maybe Integer)
