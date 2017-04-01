@@ -11,7 +11,6 @@ import           Data.Aeson               as A
 import qualified Data.ByteString.Lazy     as BSL
 import           Data.Maybe               (fromJust)
 import           Data.Monoid              ((<>))
-import           Data.Text.Encoding
 import qualified Data.Vector              as V
 import qualified Database.Redis           as R
 import           Network.HTTP.Types       hiding (noContent204)
@@ -27,11 +26,6 @@ import           Network.IPv6DB
 import           Network.IPv6DB.Types
 
 data Env = Env { redisConn :: R.Connection }
-
-withEnv :: forall r (m :: * -> *) a. r
-        -> ReaderT r m a
-        -> m a
-withEnv = flip runReaderT
 
 main :: IO ()
 main = do
@@ -70,11 +64,13 @@ ipv6db req res = do
 
     where
 
+      withEnv = flip runReaderT
+
       maybeJSONBody :: FromJSON a => IO (Maybe a)
       maybeJSONBody = A.decode <$> strictRequestBody req
 
       -- -----------------------------------------------------------------------
-      -- URI Handlers                                                         --
+      -- End point handlers                                                         --
       -- -----------------------------------------------------------------------
 
       batchHandler mtd = do
@@ -245,6 +241,10 @@ ipv6db req res = do
         responseLBS
           status
           [ ("Content-Type", "application/json; charset=utf-8") ]
+
+      -- -----------------------------------------------------------------------
+      -- Helper functions from Redis queries to JSON responses                --
+      -- -----------------------------------------------------------------------
 
       fromEntries (Entries ents) msrcs =
         encode <$> zipWithM toJson ents msrcs
