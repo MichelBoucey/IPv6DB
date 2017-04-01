@@ -1,7 +1,9 @@
 name:                IPv6DB
 version:             0.1.0
 synopsis:            A RESTful Web Service for IPv6-related data
-description:         A RESTful Web Service for IPv6-related data
+description:         IPv6DB is a RESTful microservice to store lists of IPv6
+                     addresses and attach to each of them a free-schema JSON
+                     value. Each resource can be permanent or TTLed.
                      using Redis as backend
 homepage:            https://github.com/MichelBoucey/IPv6DB
 license:             BSD3
