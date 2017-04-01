@@ -34,7 +34,7 @@ import           Text.IPv6Addr
 import           Network.IPv6DB.Types as I
 
 setSource ::Connection -> StdMethod -> Resource -> IO RedisResponse
-setSource _ _ (ResourceError _ _ _) = undefined
+setSource _ _ ResourceError{} = undefined
 setSource conn mtd Resource{ttl=ttlr,..} = do
   er <- runRedis conn $ setOpts
           (toKey list $ fromAddress address)

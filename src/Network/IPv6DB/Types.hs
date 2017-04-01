@@ -56,7 +56,7 @@ data RedisResponse
    deriving (Eq, Show)
 
 instance ToJSON RedisResponse where
-  toJSON (RedisError{ entry=Entry{..}, .. }) =
+  toJSON RedisError{ entry=Entry{..}, .. } =
     object 
       [ "list"    .= list
       , "address" .= address
