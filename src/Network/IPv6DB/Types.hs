@@ -68,7 +68,8 @@ data RedisErrors = RedisErrors [RedisResponse] deriving (Eq, Show)
 
 instance ToJSON RedisErrors where
   toJSON (RedisErrors rrs) =
-    object [ ("errors", Array (V.fromList $ toJSON <$> rrs)) ]
+    object
+      [ ("errors", Array $ V.fromList $ toJSON <$> filter (/= RedisOk) rrs) ]
 
 data Addresses = Addresses [Address]
 
