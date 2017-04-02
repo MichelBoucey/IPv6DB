@@ -10,16 +10,6 @@ import qualified Data.Vector     as V
 import           Prelude         hiding (error)
 import           Text.IPv6Addr
 
-instance ToJSON IPv6Addr where
-  toJSON (IPv6Addr a) = String a
-
-instance FromJSON IPv6Addr where
-  parseJSON (String s) =
-    case maybeIPv6Addr s of
-      Just addr -> pure addr
-      Nothing   -> fail "Not An IPv6 Address"
-  parseJSON _          = fail "JSON String Expected"
-
 data Addresses = Addresses [IPv6Addr]
 
 instance FromJSON Addresses where

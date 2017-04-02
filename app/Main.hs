@@ -70,9 +70,9 @@ ipv6db req res = do
       maybeJSONBody :: FromJSON a => IO (Maybe a)
       maybeJSONBody = A.decode <$> strictRequestBody req
 
-      -- -----------------------------------------------------------------------
-      -- End point handlers                                                         --
-      -- -----------------------------------------------------------------------
+      -- -------------------------------------------------------------------- --
+      -- End point handlers                                                   --
+      -- -------------------------------------------------------------------- --
 
       batchHandler mtd = do
         env@Env{..} <- ask
@@ -243,9 +243,9 @@ ipv6db req res = do
           status
           [ ("Content-Type", "application/json; charset=utf-8") ]
 
-      -- -----------------------------------------------------------------------
+      -- -------------------------------------------------------------------- --
       -- Helper functions from Redis queries to JSON responses                --
-      -- -----------------------------------------------------------------------
+      -- -------------------------------------------------------------------- --
 
       fromEntries (Entries ents) msrcs =
         encode <$> zipWithM toJson ents msrcs
