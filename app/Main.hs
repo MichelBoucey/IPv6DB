@@ -12,8 +12,9 @@ import qualified Data.ByteString.Lazy     as BSL
 import           Data.Maybe               (fromJust)
 import           Data.Monoid              ((<>))
 import qualified Data.Vector              as V
-import qualified Database.Redis           as R
+import           Database.Redis           hiding (String)
 import           Network.HTTP.Types       hiding (noContent204)
+import           Network.IPv6DB.Types
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Options.Applicative      (execParser)
@@ -24,10 +25,6 @@ import           Options
 import           Redis
 import           Types
 
-import           Network.IPv6DB.Types
-
-data Env = Env { redisConn :: R.Connection }
-
 main :: IO ()
 main = do
   Options{..} <- execParser opts
@@ -36,12 +33,12 @@ main = do
 ipv6db :: Application
 ipv6db req res = do
   Options{..} <- execParser opts
-  conn <- R.checkedConnect $
-    R.defaultConnectInfo
-      { R.connectHost     = redisHost
-      , R.connectPort     = R.PortNumber (fromInteger redisPort)
-      , R.connectAuth     = redisAuth
-      , R.connectDatabase = redisDatabase }
+  conn <- checkedConnect $
+    defaultConnectInfo
+      { connectHost     = redisHost
+      , connectPort     = PortNumber (fromInteger redisPort)
+      , connectAuth     = redisAuth
+      , connectDatabase = redisDatabase }
   withEnv Env { redisConn = conn } $
 
     case parseMethod (requestMethod req) of
@@ -92,7 +89,7 @@ ipv6db req res = do
             mjson <- maybeJSONBody
             case mjson of
               Just ents -> do
-                msrcs <- R.runRedis redisConn (getByEntries ents)
+                msrcs <- runRedis redisConn (getByEntries ents)
                 case msrcs of
                   Right srcs ->
                     withEnv env (fromEntries ents srcs) >>= jsonOk
@@ -103,7 +100,7 @@ ipv6db req res = do
             mjson <- maybeJSONBody
             case mjson of
               Just ents -> do
-                ed <- R.runRedis redisConn (delByEntries ents)
+                ed <- runRedis redisConn (delByEntries ents)
                 case ed of
                   Right d ->
                     case d of
@@ -136,7 +133,7 @@ ipv6db req res = do
             mjson <- maybeJSONBody
             case mjson of
               Just addrs -> do
-                emsrcs <- R.runRedis redisConn (getByAddresses list addrs)
+                emsrcs <- runRedis redisConn (getByAddresses list addrs)
                 case emsrcs of
                   Right msrcs ->
                     withEnv env (fromAddresses list addrs msrcs) >>= jsonOk
@@ -147,7 +144,7 @@ ipv6db req res = do
             mjson <- maybeJSONBody
             case mjson of
               Just addrs -> do
-                ed <- R.runRedis redisConn (delByAddresses list addrs)
+                ed <- runRedis redisConn (delByAddresses list addrs)
                 case ed of
                   Right d ->
                     case d of
@@ -177,7 +174,7 @@ ipv6db req res = do
           GET ->
             case maybeIPv6Addr addr of
               Just (IPv6Addr addr') -> do
-                emsrc <- liftIO (R.runRedis redisConn $ getSource list addr')
+                emsrc <- liftIO (runRedis redisConn $ getSource list addr')
                 case emsrc of
                   Right msrc ->
                     case msrc of
@@ -199,7 +196,7 @@ ipv6db req res = do
           DELETE ->
             case maybeIPv6Addr addr of
               Just (IPv6Addr addr') -> do
-                er <- liftIO (R.runRedis redisConn $ delSource list addr')
+                er <- liftIO (runRedis redisConn $ delSource list addr')
                 case er of
                   Right i ->
                     case i of
