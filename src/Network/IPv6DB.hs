@@ -82,11 +82,15 @@ setSource conn mtd Resource{ttl=ttlr,..} = do
                 address
                 "Undefined Redis Error"
 
-toRedisError :: T.Text -> Address -> BS.ByteString -> RedisResponse
+toRedisError :: T.Text
+             -> Address
+             -> BS.ByteString
+             -> RedisResponse
 toRedisError list addr err =
   RedisError
     { entry = toEntry list addr
-    , error = err }
+    , error = err
+    }
 
 ttlSource :: Connection
           -> T.Text
@@ -100,7 +104,7 @@ ttlSource conn list addr = do
         if i > 0
           then Just i
           else Nothing
-      Left _    -> Nothing
+      Left _  -> Nothing
 
 getSource :: RedisCtx m f
           => T.Text
@@ -121,12 +125,12 @@ toResource :: T.Text
            -> Maybe Resource
 toResource list addr mi bs =
   case decode (BSL.fromStrict bs) of
-    Just source -> Just
+    Just src -> Just
       Resource
         { list    = list
         , address = Address (IPv6Addr addr)
         , ttl     = mi
-        , source  = Source source
+        , source  = Source src
         }
     Nothing     -> Nothing
 
