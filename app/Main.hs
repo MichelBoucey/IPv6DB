@@ -1,7 +1,5 @@
 {-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE KindSignatures    #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes        #-}
 {-# LANGUAGE RecordWildCards   #-}
 
 import           Control.Monad            (zipWithM)
