@@ -4,7 +4,7 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE RecordWildCards       #-}
 
-module Network.IPv6DB
+module Redis
   ( setSource
   , getSource
   , delSource
@@ -31,7 +31,9 @@ import           Database.Redis       as R hiding (decode)
 import           Network.HTTP.Types   (StdMethod (..))
 import           Text.IPv6Addr
 
-import           Network.IPv6DB.Types as I
+import           Network.IPv6DB.Types
+
+import           Types
 
 setSource ::Connection -> StdMethod -> Resource -> IO RedisResponse
 setSource _ _ ResourceError{} = undefined

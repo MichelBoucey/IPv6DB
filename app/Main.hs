@@ -21,8 +21,9 @@ import           Prelude                  hiding (error)
 import           Text.IPv6Addr
 
 import           Options
+import           Redis
+import           Types
 
-import           Network.IPv6DB
 import           Network.IPv6DB.Types
 
 data Env = Env { redisConn :: R.Connection }
