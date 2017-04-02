@@ -191,7 +191,7 @@ ipv6db req res = do
                           encode $
                             ResourceError
                               list
-                              (Address $ IPv6Addr addr')
+                              (IPv6Addr addr')
                               "Resource Not Found"
                   Left _     -> jsonError "Error"
               Nothing -> jsonError "Not IPv6 Address in URI"
@@ -209,7 +209,7 @@ ipv6db req res = do
                           encode $
                             ResourceError
                               list
-                              (Address (IPv6Addr addr'))
+                              (IPv6Addr addr')
                               "The Resource Doesn't Already Exist"
                   Left _ -> jsonError "Error"--TODO!
               Nothing -> jsonError "Not an IPv6 Address in URI"
@@ -265,7 +265,7 @@ ipv6db req res = do
           toJson addr Nothing =
             return (ResourceError list addr "Resource Not Found")
 
-      buildResource conn list (Address (IPv6Addr addr)) src = do
+      buildResource conn list (IPv6Addr addr) src = do
         mttl <- ttlSource conn list addr
         return (fromJust $ toResource list addr mttl src)
 

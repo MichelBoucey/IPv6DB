@@ -16,7 +16,6 @@ module Redis
   , toResource
   , toRedisError
   , maybeResource
-  , fromAddress
   )
   where
 
@@ -39,7 +38,7 @@ setSource ::Connection -> StdMethod -> Resource -> IO RedisResponse
 setSource _ _ ResourceError{} = undefined
 setSource conn mtd Resource{ttl=ttlr,..} = do
   er <- runRedis conn $ setOpts
-          (toKey list $ fromAddress address)
+          (toKey list $ fromIPv6Addr address)
           (BSL.toStrict $ encode source)
           SetOpts
             { setSeconds   = ttlr
@@ -85,7 +84,7 @@ setSource conn mtd Resource{ttl=ttlr,..} = do
                 "Undefined Redis Error"
 
 toRedisError :: T.Text
-             -> Address
+             -> IPv6Addr
              -> BS.ByteString
              -> RedisResponse
 toRedisError list addr err =
@@ -130,7 +129,7 @@ toResource list addr mi bs =
     Just src -> Just
       Resource
         { list    = list
-        , address = Address (IPv6Addr addr)
+        , address = IPv6Addr addr
         , ttl     = mi
         , source  = Source src
         }
@@ -167,14 +166,14 @@ addressesToKeys list addrs =
 
 fromEntries :: Entries -> [BS.ByteString]
 fromEntries (Entries ents) =
-  (\Entry{..} -> toKey list (fromAddress address)) <$> ents
+  (\Entry{..} -> toKey list (fromIPv6Addr address)) <$> ents
 
 fromAddresses :: Addresses -> [T.Text]
 fromAddresses (Addresses addrs) =
-  fromAddress <$> addrs
+  fromIPv6Addr <$> addrs
 
-fromAddress :: Address -> T.Text
-fromAddress (Address (IPv6Addr addr)) = addr
+--fromAddress :: Address -> T.Text
+--fromAddress (Address (IPv6Addr addr)) = addr
 
 toKey :: T.Text -> T.Text -> BS.ByteString
 toKey list addr =
@@ -194,6 +193,6 @@ maybeResource v prs =
         A.Error _   -> Nothing
     _         -> Nothing
 
-toEntry :: T.Text -> Address -> Entry
+toEntry :: T.Text -> IPv6Addr -> Entry
 toEntry list address = Entry { list = list, address = address }
 

@@ -10,13 +10,14 @@ import qualified Data.Text            as T
 import           Data.Text.Encoding
 import qualified Data.Vector          as V
 import           Prelude              hiding (error)
+import           Text.IPv6Addr
 
 import           Network.IPv6DB.Types
 
 data Entry =
   Entry
     { list    :: !T.Text
-    , address :: !Address
+    , address :: !IPv6Addr
     } deriving (Eq, Show)
 
 instance FromJSON Entry where
@@ -45,7 +46,7 @@ data RedisResponse
    deriving (Eq, Show)
 
 instance ToJSON RedisResponse where
-  toJSON RedisError{ entry=Entry{..}, .. } =
+  toJSON RedisError{entry=Entry{..},..} =
     object
       [ "list"    .= list
       , "address" .= address

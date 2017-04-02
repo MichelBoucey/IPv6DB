@@ -10,19 +10,17 @@ import qualified Data.Vector     as V
 import           Prelude         hiding (error)
 import           Text.IPv6Addr
 
-newtype Address = Address IPv6Addr deriving (Eq, Show)
+instance ToJSON IPv6Addr where
+  toJSON (IPv6Addr a) = String a
 
-instance ToJSON Address where
-  toJSON (Address (IPv6Addr a)) = String a
-
-instance FromJSON Address where
+instance FromJSON IPv6Addr where
   parseJSON (String s) =
     case maybeIPv6Addr s of
-      Just a  -> pure (Address a)
-      Nothing -> fail "Not An IPv6 Address"
+      Just addr -> pure addr
+      Nothing   -> fail "Not An IPv6 Address"
   parseJSON _          = fail "JSON String Expected"
 
-data Addresses = Addresses [Address]
+data Addresses = Addresses [IPv6Addr]
 
 instance FromJSON Addresses where
   parseJSON (Array v) = do
@@ -43,13 +41,13 @@ instance FromJSON Source where
 data Resource
   = Resource
       { list    :: !T.Text
-      , address :: !Address
+      , address :: !IPv6Addr
       , ttl     :: !(Maybe Integer)
       , source  :: !Source
       }
   | ResourceError
       { list    :: !T.Text
-      , address :: !Address
+      , address :: !IPv6Addr
       , error   :: !T.Text
       } 
   deriving (Eq, Show)
@@ -77,7 +75,7 @@ instance FromJSON Resource where
         address <- do
           ma <- o .: "address"
           case maybeIPv6Addr ma of
-            Just a  -> pure (Address a)
+            Just a  -> pure a
             Nothing -> fail "Not an IPv6 Address"
         ttl     <- o .: "ttl"
         source  <- o .: "source"
