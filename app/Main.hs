@@ -2,7 +2,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
 
-import           Control.Monad            (zipWithM)
 import           Control.Monad.IO.Class   (liftIO)
 import           Control.Monad.Reader
 import           Data.Aeson               as A
@@ -38,11 +37,8 @@ ipv6db req res = do
       , connectAuth     = redisAuth
       , connectDatabase = redisDatabase }
   withEnv Env { redisConn = conn } $
-
     case parseMethod (requestMethod req) of
-
       Right mtd ->
-
         case pathInfo req of
 
           ["ipv6db","v1","batch"] ->
@@ -55,9 +51,7 @@ ipv6db req res = do
             listAddressHandler mtd list addr
 
           _ -> liftIO $ jsonError "Bad URI Request"
-
       Left _ -> liftIO $ jsonError "Bad HTTP Method"
-
     where
 
       withEnv = flip runReaderT
@@ -180,7 +174,7 @@ ipv6db req res = do
                         ttls <- ttlSource redisConn list addr'
                         case toResource list addr' ttls src of
                           Just rsrc -> jsonOk (A.encode rsrc)
-                          Nothing   -> jsonError ""-- TODO!
+                          Nothing   -> jsonError "Can't Build Resource"
                       Nothing  ->
                         jsonRes404 $
                           encode $
@@ -237,30 +231,4 @@ ipv6db req res = do
         responseLBS
           status
           [ ("Content-Type", "application/json; charset=utf-8") ]
-
-      -- -------------------------------------------------------------------- --
-      -- Helper functions from Redis queries to JSON responses                --
-      -- -------------------------------------------------------------------- --
-
-      fromEntries (Entries ents) msrcs =
-        encode <$> zipWithM toJson ents msrcs
-        where
-          toJson Entry{..} (Just src) = do
-            Env{..} <- ask
-            liftIO (buildResource redisConn list address src)
-          toJson Entry{..} Nothing =
-            return (ResourceError list address "Resource Not Found")
-
-      fromAddresses list (Addresses addrs) msrcs =
-        encode <$> zipWithM toJson addrs msrcs
-        where
-          toJson addr (Just src) = do
-            Env{..} <- ask
-            liftIO (buildResource redisConn list addr src)
-          toJson addr Nothing =
-            return (ResourceError list addr "Resource Not Found")
-
-      buildResource conn list (IPv6Addr addr) src = do
-        mttl <- ttlSource conn list addr
-        return (fromJust $ toResource list addr mttl src)
 
