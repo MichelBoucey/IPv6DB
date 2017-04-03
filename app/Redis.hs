@@ -1,6 +1,4 @@
-{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE RecordWildCards       #-}
 
@@ -18,9 +16,8 @@ import qualified Data.Text            as T
 import           Data.Text.Encoding
 import           Database.Redis       as R hiding (decode)
 import           Network.HTTP.Types   (StdMethod (..))
-import           Text.IPv6Addr
-
 import           Network.IPv6DB.Types
+import           Text.IPv6Addr
 
 import           Types
 
