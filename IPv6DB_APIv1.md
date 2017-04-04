@@ -2,13 +2,15 @@
 
 ## A RESTful Web service for IPv6-related data
 
-Default Web service port: 4446
+- Default Web service port: 4446
+
+- POST, PUT and DELETE returns just a HTTP status 204 "No Content" inc case of success. 
 
 ### /ipv6db/v1/list/\{*listName*\}/addresses/{*IPv6Address*}
 
 __POST /ipv6db/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
 
-Create an IPv6 address with its related data to the given list.
+Creates a resource.
 
     POST /ipv6db/v1/list/hosts/addresses/abcd::1234
 
@@ -24,7 +26,7 @@ Create an IPv6 address with its related data to the given list.
 
 __PUT /ipv6db/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
 
-Replace an IPv6 address with its related data to the given list.
+Updates a resource.
 
 ```
     PUT /ipv6db/v1/list/hosts/addresses/abcd::1234
@@ -72,13 +74,12 @@ __DELETE /ipv6db/v1/list/\{__*listName*__\}/addresses/\{__*IPv6Address*__\}__
 
 Response:
 
-If successful, returns an empty response body.
 
 ### /ipv6db/v1/list/\{*listName*\}/addresses
 
 __POST /ipv6db/v1/list/\{__*listName*__\}/addresses__
 
-Create many IPv6 addresses with their related data to the given list.
+Creates many resources that belongs to the given list.
 
 ```json
     POST /ipv6db/v1/hosts/addresses
@@ -104,7 +105,7 @@ Create many IPv6 addresses with their related data to the given list.
 
 __PUT /ipv6db/v1/list/\{__*listName*__\}/addresses__
 
-Replace many IPv6 addresses with their related data to the given list.
+Updates many resources that belongs to the given list.
 
 ```json
     PUT /ipv6db/v1/hosts/addresses
@@ -128,11 +129,9 @@ Replace many IPv6 addresses with their related data to the given list.
     ]
 ```
 
-Replace many IPv6 addresses with their related data to the given list.
-
 __GET /ipv6db/v1/list/\{__*listName*__\}/addresses__
 
-Get data related to the given IPv6address.
+Gets many resources from the list based on a JSON array of IPv6 addresses.
 
 ```json
     GET /ipv6db/v1/hosts/addresses
@@ -144,7 +143,7 @@ Get data related to the given IPv6address.
 
 __DELETE /ipv6db/v1/list/\{__*listName*__\}/addresses__
 
-Delete many IPv6 addresses from the given list.
+Deletes many resources from the list based on a JSON array of IPv6 addresses.
 
 ```json
     DELETE /ipv6db/v1/hosts/addresses
@@ -157,6 +156,8 @@ Delete many IPv6 addresses from the given list.
 ### /ipv6db/v1/batch
 
 __PUT /ipv6db/v1/batch__
+
+Updates many resources possibly from different lists based on a JSON array.
 
 ```json
     PUT /ipv6db/v1/batch
@@ -172,7 +173,7 @@ __PUT /ipv6db/v1/batch__
       },
       {
         "list": "blacklist",
-         "address": "bad0:1235",
+         "address": "bad::1235",
          "ttl": 604800,
          "source": null
       }
@@ -180,6 +181,8 @@ __PUT /ipv6db/v1/batch__
 ```
 
 __GET /ipv6db/v1/batch__
+
+Gets many resources possibly from different lists based on a JSON array.
 
 ```json
     GET /ipv6db/v1/batch
@@ -190,12 +193,14 @@ __GET /ipv6db/v1/batch__
       },
       {
         "list": "blacklist",
-        "address": "bad0:1234"
+        "address": "bad::1234"
       }
     ]
 ```
 
 __DELETE /ipv6db/v1/batch__
+
+Deletes many resources possibly from different lists based on a JSON array.
 
 ```json
     DELETE /ipv6db/v1/batch
@@ -206,7 +211,7 @@ __DELETE /ipv6db/v1/batch__
       },
       {
         "list": "backlist",
-        "address": "bad0:1234"
+        "address": "bad::1234"
       }
     ]
 ```
