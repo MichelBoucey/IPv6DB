@@ -199,7 +199,7 @@ ipv6db req res = do
                             ResourceError
                               list
                               (IPv6Addr addr')
-                              "The Resource Doesn't Already Exist"
+                              "The Resource Doesn't Exist"
                   Left _ -> jsonError "Error"--TODO!
               Nothing -> jsonError "Not an IPv6 Address in URI"
           _      -> methodNotAllowed
