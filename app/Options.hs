@@ -33,27 +33,30 @@ options =
           <> metavar "" )
     <*>
       strOption
-        ( long "redis-host"
+        ( short 'h'
+          <> long "redis-host"
           <> help "Redis host"
           <> showDefault
           <> value "localhost" )
     <*>
       option auto
-        ( short 'p'
-          <> long "port"
+        ( short 'l'
+          <> long "redis-port"
           <> help "Redis listening port"
           <> showDefault
           <> value 6379
           <> metavar "" )
     <*>
       option auto
-        ( long "redis-database"
+        ( short 'd'
+          <> long "redis-database"
           <> help "Redis database"
           <> showDefault
           <> value 0 )
     <*>
       option auto
-        ( long "redis-auth"
+        ( short 'a'
+          <> long "redis-auth"
           <> help "Redis authentication password"
           <> value Nothing )
 
