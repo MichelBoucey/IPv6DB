@@ -1,8 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import           Control.Lens
 import           Data.Aeson
--- import           Data.Aeson.Lens
 import           Network.HTTP.Client
 import           Network.HTTP.Types.Status (statusCode)
 import           Data.Vector
@@ -15,17 +13,21 @@ main = hspec $ do
 
     describe "POST /ipv6db/v1/list/test0/addresses/abcd::1234" $
 
-        it "Creates the resource for the given address in a list named test0 with a JSON object in source field" $ do
+        it "Creates the resource" $ do
 
           mngr <- newManager defaultManagerSettings
           initReq <- parseRequest "http://localhost:4446/ipv6db/v1/list/test0/addresses/abcd::1234"
-          let req = initReq { method = "POST", requestBody = RequestBodyLBS $ encode (object [("ttl", Null),("source", object [("data",String "A B C D")])]) }
+          let req = initReq
+                      { method = "POST"
+                      , requestBody =
+                          RequestBodyLBS $
+                            encode (object [("ttl", Null),("source", object [("data",String "A B C D")])]) }
           res <- httpLbs req mngr
           statusCode (responseStatus res) `shouldBe` 204
 
     describe "PUT /ipv6db/v1/list/test0/addresses/abcd::1234" $
 
-        it "Updates the resource previously POSTed" $ do
+        it "Updates the resource" $ do
 
           mngr <- newManager defaultManagerSettings
           initReq <- parseRequest "http://localhost:4446/ipv6db/v1/list/test0/addresses/abcd::1234"
@@ -59,7 +61,7 @@ main = hspec $ do
 
     describe "POST /ipv6db/v1/list/test0/addresses" $
 
-        it "Creates resources for the given list named test0" $ do
+        it "Creates resources for the given list" $ do
 
           mngr <- newManager defaultManagerSettings
           initReq <- parseRequest "http://localhost:4446/ipv6db/v1/list/test0/addresses"
@@ -87,7 +89,7 @@ main = hspec $ do
 
     describe "PUT /ipv6db/v1/list/test0/addresses" $
 
-        it "Updates the resources previously POSTed" $ do
+        it "Updates the resources that belong to the given list" $ do
 
           mngr <- newManager defaultManagerSettings
           initReq <- parseRequest "http://localhost:4446/ipv6db/v1/list/test0/addresses"
@@ -115,7 +117,7 @@ main = hspec $ do
 
     describe "GET /ipv6db/v1/list/test0/addresses" $
 
-        it "Gets the resources previously POSTed and PUTed" $ do
+        it "Gets the resources that belong to the given list" $ do
 
           mngr <- newManager defaultManagerSettings
           initReq <- parseRequest "http://localhost:4446/ipv6db/v1/list/test0/addresses"
@@ -134,7 +136,7 @@ main = hspec $ do
 
     describe "DELETE /ipv6db/v1/list/test0/addresses" $
 
-        it "Deletes the resources previously POSTed and PUTed" $ do
+        it "Deletes the resources that belong to the given list" $ do
 
           mngr <- newManager defaultManagerSettings
           initReq <- parseRequest "http://localhost:4446/ipv6db/v1/list/test0/addresses"
@@ -154,7 +156,7 @@ main = hspec $ do
 
     describe "POST /ipv6db/v1/batch" $
 
-        it "Creates resources on different lists" $ do
+        it "Creates many resources on different lists" $ do
 
           mngr <- newManager defaultManagerSettings
           initReq <- parseRequest "http://localhost:4446/ipv6db/v1/batch"
@@ -182,9 +184,64 @@ main = hspec $ do
           res <- httpLbs req mngr
           statusCode (responseStatus res) `shouldBe` 204
 
+    describe "PUT /ipv6db/v1/batch" $
+
+        it "Updates many resources on different lists" $ do
+
+          mngr <- newManager defaultManagerSettings
+          initReq <- parseRequest "http://localhost:4446/ipv6db/v1/batch"
+          let req = initReq
+                      { method = "PUT"
+                      , requestBody =
+                          RequestBodyLBS $
+                            encode $
+                              Array $
+                                fromList
+                                  [ object
+                                      [ ("list", "test1")
+                                      , ("address", "abcd::1234")
+                                      , ("ttl", Null)
+                                      , ("source", object [ ("data", String "1 2 3 4") ])
+                                      ]
+                                  , object
+                                      [ ("list", "test2")
+                                      , ("address", "abcd::5678")
+                                      , ("ttl", Null)
+                                      , ("source", object [ ("data", String "5 6 7 8") ])
+                                      ]
+                                  ]
+                       }
+          res <- httpLbs req mngr
+          statusCode (responseStatus res) `shouldBe` 204
+
+    describe "GET /ipv6db/v1/batch" $
+
+        it "Gets many resources on different lists" $ do
+
+          mngr <- newManager defaultManagerSettings
+          initReq <- parseRequest "http://localhost:4446/ipv6db/v1/batch"
+          let req = initReq
+                      { requestBody =
+                          RequestBodyLBS $
+                            encode $
+                              Array $
+                                fromList
+                                  [ object
+                                      [ ("list", "test1")
+                                      , ("address", "abcd::1234")
+                                      ]
+                                  , object
+                                      [ ("list", "test2")
+                                      , ("address", "abcd::5678")
+                                      ]
+                                  ]
+                       }
+          res <- httpLbs req mngr
+          responseBody res `shouldBe` "[{\"ttl\":null,\"list\":\"test1\",\"address\":\"abcd::1234\",\"source\":{\"data\":\"1 2 3 4\"}},{\"ttl\":null,\"list\":\"test2\",\"address\":\"abcd::5678\",\"source\":{\"data\":\"5 6 7 8\"}}]"
+
     describe "DELETE /ipv6db/v1/batch" $
 
-        it "Deletes resources on different lists" $ do
+        it "Deletes many resources on different lists" $ do
 
           mngr <- newManager defaultManagerSettings
           initReq <- parseRequest "http://localhost:4446/ipv6db/v1/batch"
@@ -196,12 +253,12 @@ main = hspec $ do
                               Array $
                                 fromList
                                   [ object
-                                      [ ("list","test1")
-                                      , ("address","abcd::1234")
+                                      [ ("list", "test1")
+                                      , ("address", "abcd::1234")
                                       ]
                                   , object
-                                      [ ("list","test2")
-                                      , ("address","abcd::5678")
+                                      [ ("list", "test2")
+                                      , ("address", "abcd::5678")
                                       ]
                                   ]
                        }
