@@ -117,7 +117,7 @@ ipv6db req res = do
                     results <- mapM (setSource redisConn mtd' . fromJust) rsrcs
                     if all (== RedisOk) results
                       then noContent204
-                      else jsonRes400 (encode results)
+                      else jsonRes400 (encode $ filter (/= RedisOk) results)
                   else badJSONRequest
               _              -> badJSONRequest
 
