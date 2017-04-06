@@ -7,7 +7,6 @@ module Network.IPv6DB.Types where
 import           Data.Aeson      as A
 import qualified Data.Text       as T
 import qualified Data.Vector     as V
-import           Prelude         hiding (error)
 import           Text.IPv6Addr
 
 data Addresses = Addresses [IPv6Addr]
@@ -67,7 +66,7 @@ instance FromJSON Resource where
           case maybeIPv6Addr ma of
             Just a  -> pure a
             Nothing -> fail "Not an IPv6 Address"
-        ttl     <- o .: "ttl"
+        ttl     <- o .:? "ttl"
         source  <- o .: "source"
         return Resource{..}
 
@@ -83,7 +82,7 @@ instance FromJSON Resources where
     if all isSuccess rsrcs
       then pure $ Resources (toRsrc <$> rsrcs)
       else fail "Malformed JSON Array Of Resources"
-  parseJSON _           = fail "JSON Array Expected"
+  parseJSON _         = fail "JSON Array Expected"
 
 isSuccess :: Result a -> Bool
 isSuccess (A.Success _) = True
@@ -91,9 +90,9 @@ isSuccess (A.Error _)   = False
 
 toRsrc :: Result Resource -> Resource
 toRsrc (A.Success r) = r
-toRsrc (A.Error _)   = undefined
+toRsrc (A.Error _)   = Prelude.error "Success value only"
 
 fromResult :: Result a -> a
 fromResult (A.Success e) = e
-fromResult (A.Error _)   = undefined
+fromResult (A.Error _)   = Prelude.error "Success value only"
 
