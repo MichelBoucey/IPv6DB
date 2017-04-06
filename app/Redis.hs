@@ -163,8 +163,12 @@ maybeResource :: Value
               -> Maybe Resource
 maybeResource v prs =
   case v of
-    Object hm ->
-      case fromJSON (Object $ union hm $ fromList prs) of
+    Object hm -> do
+      let hm' =
+            if member "ttl" hm
+              then hm
+              else insert "ttl" Null hm
+      case fromJSON (Object $ union hm' $ fromList prs) of
         A.Success r -> Just r
         A.Error _   -> Nothing
     _         -> Nothing
