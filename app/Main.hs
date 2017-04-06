@@ -41,13 +41,13 @@ ipv6db req res = do
       Right mtd ->
         case pathInfo req of
 
-          ["ipv6db","v1","batch"] ->
+          ["ipv6db", "v1", "batch"] ->
             batchHandler mtd
 
-          ["ipv6db","v1","list",list,"addresses"] ->
+          ["ipv6db", "v1", "list", list, "addresses"] ->
             listHandler mtd list
 
-          ["ipv6db","v1","list",list,"addresses",addr] ->
+          ["ipv6db", "v1", "list", list, "addresses", addr] ->
             listAddressHandler mtd list addr
 
           _ -> liftIO $ jsonError "Bad URI Request"
@@ -60,7 +60,7 @@ ipv6db req res = do
       maybeJSONBody = A.decode <$> strictRequestBody req
 
       -- -------------------------------------------------------------------- --
-      -- End point handlers                                                   --
+      -- Endpoint handlers                                                    --
       -- -------------------------------------------------------------------- --
 
       batchHandler mtd = do

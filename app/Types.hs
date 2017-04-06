@@ -14,7 +14,6 @@ import           Network.IPv6DB.Types
 import           Prelude              hiding (error)
 import           Text.IPv6Addr
 
-
 data Env = Env { redisConn :: Connection }
 
 data Entry =
