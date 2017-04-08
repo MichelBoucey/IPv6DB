@@ -14,8 +14,10 @@ import           Network.HTTP.Types       hiding (noContent204)
 import           Network.IPv6DB.Types
 import           Network.Wai
 import           Network.Wai.Handler.Warp
+import           Network.Wai.Logger
 import           Options.Applicative      (execParser)
 import           Prelude                  hiding (error)
+import           System.Log.FastLogger
 import           Text.IPv6Addr
 
 import           Options
@@ -25,10 +27,13 @@ import           Types
 main :: IO ()
 main = do
   Options{..} <- execParser opts
-  run appPort ipv6db
+  tc <- newTimeCache simpleTimeFormat
+  al <- apacheLogger <$>
+          initLogger FromSocket (LogStdout defaultBufSize) tc
+  run appPort (ipv6db al)
 
-ipv6db :: Application
-ipv6db req res = do
+ipv6db :: ApacheLogger -> Application
+ipv6db logger req res = do
   Options{..} <- execParser opts
   conn <- checkedConnect $
     defaultConnectInfo
@@ -53,6 +58,8 @@ ipv6db req res = do
           _ -> liftIO $ jsonError "Bad URI Request"
       Left _ -> liftIO $ jsonError "Bad HTTP Method"
     where
+
+      logWith status = liftIO (logger req status Nothing)
 
       withEnv = flip runReaderT
 
@@ -208,23 +215,38 @@ ipv6db req res = do
       -- JSON Responses                                                       --
       -- -----------------------------------------------------------------------
 
-      jsonOk bs = res (jsonRes status200 bs)
+      jsonOk bs = do
+        logWith status200
+        res (jsonRes status200 bs)
 
-      noContent204 = res (responseLBS status204 [] BSL.empty)
+      noContent204 = do
+        logWith status204
+        res (responseLBS status204 [] BSL.empty)
 
-      jsonRes400 bs = res (jsonRes status400 bs)
+      jsonRes400 bs = do
+        logWith status400
+        res (jsonRes status400 bs)
 
-      jsonRes404 bs = res (jsonRes status404 bs)
+      jsonRes404 bs = do
+        logWith status404
+        res (jsonRes status404 bs)
 
-      badJSONRequest = jsonError "Bad JSON Request"
+      badJSONRequest = do
+        logWith status400
+        jsonError "Bad JSON Request"
 
-      jsonError err = res (jsonRes status400 $ justError err)
+      jsonError err = do
+        logWith status400
+        res (jsonRes status400 $ justError err)
 
-      jsonServerError err = res (jsonRes status500 $ justError err)
+      jsonServerError err = do
+        logWith status500
+        res (jsonRes status500 $ justError err)
 
       justError err = "{\"error\":\"" <> err <> "\"}"
 
-      methodNotAllowed =
+      methodNotAllowed = do
+        logWith status405
         res (jsonRes status405 $ justError "Method Not Allowed")
 
       jsonRes status =
