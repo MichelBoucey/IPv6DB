@@ -207,7 +207,7 @@ ipv6db logger req res = do
                               list
                               (IPv6Addr addr')
                               "The Resource Doesn't Exist"
-                  Left _ -> jsonError "Error"--TODO!
+                  Left _ -> jsonError "Error"
               Nothing -> jsonError "Not an IPv6 Address in URI"
           _      -> methodNotAllowed
 
