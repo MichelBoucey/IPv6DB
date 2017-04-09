@@ -4,7 +4,9 @@
 
 - Default Web service port: 4446
 
-- POST, PUT and DELETE returns just a HTTP status 204 "No Content" in case of success. 
+- In case of success, POST, PUT and DELETE returns a HTTP status 204 "No Content".
+
+- The field "ttl" is optional (default to null).
 
 ### /ipv6db/v1/list/\{*listName*\}/addresses/{*IPv6Address*}
 
