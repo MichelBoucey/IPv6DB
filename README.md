@@ -23,3 +23,5 @@ Available options:
 ```
 
 See [IPv6DB APIv1](https://github.com/MichelBoucey/IPv6DB/blob/master/IPv6DB_APIv1.md).
+
+The package delivers binary and library.
