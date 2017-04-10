@@ -8,11 +8,11 @@ import           Options.Applicative
 data Options =
   Options
     { appPort       :: Int
+    , logFile       :: String
     , redisHost     :: String
     , redisPort     :: Integer
     , redisDatabase :: Integer
     , redisAuth     :: Maybe ByteString
-    , logFile       :: String
     }
 
 opts :: ParserInfo Options
@@ -32,6 +32,13 @@ options =
           <> showDefault
           <> value 4446
           <> metavar "" )
+    <*>
+      strOption
+        ( short 'l'
+          <> long "log-file"
+          <> help "Log file"
+          <> showDefault
+          <> value "/var/log/ipv6db.log" )
     <*>
       strOption
         ( short 'h'
@@ -60,11 +67,3 @@ options =
           <> long "redis-auth"
           <> help "Redis authentication password"
           <> value Nothing )
-    <*>
-      strOption
-        ( short 'l'
-          <> long "log-file"
-          <> help "Log file"
-          <> showDefault
-          <> value "/var/log/ipv6db.log" )
-
