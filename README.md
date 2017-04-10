@@ -14,11 +14,11 @@ Usage: ipv6db [-p|--port] [-h|--redis-host ARG] [-r|--redis-port]
 
 Available options:
   -p,--port                Alternative listening port (default: 4446)
+  -l,--log-file ARG        Log file (default: "/var/log/ipv6db.log")
   -h,--redis-host ARG      Redis host (default: "localhost")
   -r,--redis-port          Redis listening port (default: 6379)
   -d,--redis-database ARG  Redis database (default: 0)
   -a,--redis-auth ARG      Redis authentication password
-  -l,--log-file ARG        Log file (default: "/var/log/ipv6db.log")
   -h,--help                Show this help text
 ```
 
