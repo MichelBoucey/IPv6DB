@@ -23,6 +23,3 @@ Available options:
 ```
 
 See [IPv6DB APIv1](https://github.com/MichelBoucey/IPv6DB/blob/master/IPv6DB_APIv1.md).
-
-## No release yet! Work In Progress.
-
