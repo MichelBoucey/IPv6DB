@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE RecordWildCards       #-}
 
-module Redis where
+module Queries where
 
 import           Control.Monad        (zipWithM)
 import           Control.Monad.Reader

@@ -21,7 +21,7 @@ import           System.Log.FastLogger
 import           Text.IPv6Addr
 
 import           Options
-import           Redis
+import           Queries
 import           Types
 
 main :: IO ()
@@ -161,7 +161,7 @@ ipv6db logger req res = do
             mjson <- maybeJSONBody
             case mjson of
               Just o ->
-                case maybeResource o [("list",String list),("address",String addr)] of
+                case maybeResource o [("list", String list),("address", String addr)] of
                   Nothing -> jsonRes400 (justError "Bad JSON Request")
                   Just rsrc   -> do
                     rdres <- setSource redisConn mtd' rsrc
