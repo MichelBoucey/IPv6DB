@@ -29,10 +29,10 @@ main = do
   Options{..} <- execParser opts
   timeCache <- newTimeCache simpleTimeFormat
   apLog <- apacheLogger <$>
-          initLogger
-            FromSocket
-            (LogFileNoRotate logFile defaultBufSize)
-            timeCache
+             initLogger
+               FromSocket
+               (LogFileNoRotate logFile defaultBufSize)
+               timeCache
   run appPort (ipv6db apLog)
 
 ipv6db :: ApacheLogger -> Application
@@ -246,11 +246,11 @@ ipv6db logger req res = do
         logWith status500
         res (jsonRes status500 $ justError err)
 
-      justError err = "{\"error\":\"" <> err <> "\"}"
-
       methodNotAllowed = do
         logWith status405
         res (jsonRes status405 $ justError "Method Not Allowed")
+
+      justError err = "{\"error\":\"" <> err <> "\"}"
 
       jsonRes status =
         responseLBS
