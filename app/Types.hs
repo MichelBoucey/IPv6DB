@@ -7,11 +7,9 @@ module Types where
 import           Database.Redis
 import           Data.Aeson           as A
 import qualified Data.ByteString      as BS
-import qualified Data.Text            as T
 import           Data.Text.Encoding
 import qualified Data.Vector          as V
 import           Prelude              hiding (error)
-import           Text.IPv6Addr
 
 import           Network.IPv6DB.Types
 
