@@ -4,6 +4,11 @@
 
 - Default Web service port: 4446
 
+- IPv6 addresses have just to be valid ones, but they are
+  stored and returned canonized in conformation with RFC 5952.
+
+- The field "source" takes a schema-free JSON value.
+
 - In case of success, POST, PUT and DELETE returns a HTTP status 204 "No Content".
 
 - The field "ttl" is optional (default to null).
@@ -18,7 +23,7 @@ Creates a resource.
 
 ```json
     {
-      "ttl": null,
+      "ttl": 3600,
       "source":
         {
           "services": ["smtp","imap"]
@@ -36,7 +41,7 @@ Updates a resource.
 
 ```json
     {
-      "ttl": null,
+      "ttl": 3600,
       "source":
         {
           "services": ["smtp","imap","ssh"]
