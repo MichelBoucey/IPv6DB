@@ -19,6 +19,30 @@ instance FromJSON Addresses where
       else fail "Bad JSON Array Of IPv6 Addresses"
   parseJSON _         = fail "JSON Array Expected"
 
+
+data Entry =
+  Entry
+    { list    :: !T.Text
+    , address :: !IPv6Addr
+    } deriving (Eq, Show)
+
+instance FromJSON Entry where
+  parseJSON (Object o) = do
+    list    <- o .: "list"
+    address <- o .: "address"
+    pure Entry{..}
+  parseJSON _          = fail "JSON Object Expected"
+
+data Entries = Entries [Entry]
+
+instance FromJSON Entries where
+  parseJSON (Array v) = do
+    let ents = fromJSON <$> V.toList v
+    if all isSuccess ents
+      then pure (Entries $ fromResult <$> ents)
+      else fail "Malformed JSON Array"
+  parseJSON _           = fail "JSON Array Expected"
+
 data Source = Source !Value deriving (Eq, Show)
 
 instance ToJSON Source where
