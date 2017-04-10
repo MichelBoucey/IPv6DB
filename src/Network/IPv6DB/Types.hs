@@ -19,7 +19,6 @@ instance FromJSON Addresses where
       else fail "Bad JSON Array Of IPv6 Addresses"
   parseJSON _         = fail "JSON Array Expected"
 
-
 data Entry =
   Entry
     { list    :: !T.Text
@@ -119,4 +118,3 @@ toRsrc (A.Error _)   = Prelude.error "Success value only"
 fromResult :: Result a -> a
 fromResult (A.Success e) = e
 fromResult (A.Error _)   = Prelude.error "Success value only"
-
