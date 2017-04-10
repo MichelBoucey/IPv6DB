@@ -22,6 +22,20 @@ Available options:
   -h,--help                Show this help text
 ```
 
+A resource example:
+
+```json
+    {
+      "list": "black",
+      "address": "abcd::1234",
+      "ttl": 34582,
+      "source":
+        {
+          "services": [25,587,143]
+        }
+    }
+```
+
 See [IPv6DB APIv1](https://github.com/MichelBoucey/IPv6DB/blob/master/IPv6DB_APIv1.md).
 
 The package includes binary and library.
