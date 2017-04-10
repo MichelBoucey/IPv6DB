@@ -12,6 +12,7 @@ data Options =
     , redisPort     :: Integer
     , redisDatabase :: Integer
     , redisAuth     :: Maybe ByteString
+    , logFile       :: String
     }
 
 opts :: ParserInfo Options
@@ -40,7 +41,7 @@ options =
           <> value "localhost" )
     <*>
       option auto
-        ( short 'l'
+        ( short 'r'
           <> long "redis-port"
           <> help "Redis listening port"
           <> showDefault
@@ -59,4 +60,11 @@ options =
           <> long "redis-auth"
           <> help "Redis authentication password"
           <> value Nothing )
+    <*>
+      strOption
+        ( short 'l'
+          <> long "log-file"
+          <> help "Log file"
+          <> showDefault
+          <> value "/var/log/ipv6db.log" )
 

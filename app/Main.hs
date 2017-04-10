@@ -27,10 +27,13 @@ import           Types
 main :: IO ()
 main = do
   Options{..} <- execParser opts
-  tc <- newTimeCache simpleTimeFormat
-  al <- apacheLogger <$>
-          initLogger FromSocket (LogStdout defaultBufSize) tc
-  run appPort (ipv6db al)
+  timeCache <- newTimeCache simpleTimeFormat
+  apLog <- apacheLogger <$>
+          initLogger
+            FromSocket
+            (LogFileNoRotate logFile defaultBufSize)
+            timeCache
+  run appPort (ipv6db apLog)
 
 ipv6db :: ApacheLogger -> Application
 ipv6db logger req res = do
