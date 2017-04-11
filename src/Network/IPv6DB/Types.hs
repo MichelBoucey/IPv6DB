@@ -40,7 +40,7 @@ instance FromJSON Entries where
     if all isSuccess ents
       then pure (Entries $ fromSuccess <$> ents)
       else fail "Malformed JSON Array"
-  parseJSON _           = fail "JSON Array Expected"
+  parseJSON _         = fail "JSON Array Expected"
 
 data Source = Source !Value deriving (Eq, Show)
 
@@ -72,11 +72,11 @@ instance ToJSON Resource where
       , "ttl"     .= ttl
       , "source"  .= source
       ]
-  toJSON ResourceError{..} =
+  toJSON ResourceError{error=err, ..} =
     object
       [ "list"    .= list
       , "address" .= address
-      , "error"   .= error
+      , "error"   .= err
       ]
 
 instance FromJSON Resource where
