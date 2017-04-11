@@ -103,7 +103,7 @@ instance FromJSON Resources where
   parseJSON (Array v) = do
     let rsrcs = fromJSON <$> V.toList v
     if all isSuccess rsrcs
-      then pure $ Resources (toRsrc <$> rsrcs)
+      then pure (Resources $ fromResult <$> rsrcs)
       else fail "Malformed JSON Array Of Resources"
   parseJSON _         = fail "JSON Array Expected"
 
@@ -111,10 +111,7 @@ isSuccess :: Result a -> Bool
 isSuccess (A.Success _) = True
 isSuccess (A.Error _)   = False
 
-toRsrc :: Result Resource -> Resource
-toRsrc (A.Success r) = r
-toRsrc (A.Error _)   = Prelude.error "Success value only"
-
 fromResult :: Result a -> a
 fromResult (A.Success e) = e
 fromResult (A.Error _)   = Prelude.error "Success value only"
+
