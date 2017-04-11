@@ -2,9 +2,10 @@
 
 ## A RESTful Web service for IPv6 related data [![Build Status](https://travis-ci.org/MichelBoucey/IPv6DB.svg?branch=master)](https://travis-ci.org/MichelBoucey/IPv6DB)
 
-IPv6DB is a RESTful microservice using Redis as backend to store lists of IPv6 addresses and attach to each of them data in a schema-free JSON value. Each resource can be permanent or TTLed.
+IPv6DB is a RESTful microservice using Redis as backend to store lists of IPv6 addresses and attach to each of them any valuable data in a schema-free valid JSON value. Each resource can be permanent or TTLed.
 
 ```bash
+[user@box ~]$ ipv6db --help
 IPv6DB v0.1.0 APIv1, (c) Michel Boucey 2017
 
 Usage: ipv6db [-p|--port] [-h|--redis-host ARG] [-r|--redis-port]
@@ -36,6 +37,10 @@ A resource example:
     }
 ```
 
-See [IPv6DB APIv1](https://github.com/MichelBoucey/IPv6DB/blob/master/IPv6DB_APIv1.md).
+The field "source" is mandatory and carry any valid JSON value.
+
+The field "ttl" is optional in API requests for a permanent resource.
+
+See the full [IPv6DB APIv1](https://github.com/MichelBoucey/IPv6DB/blob/master/IPv6DB_APIv1.md).
 
 The package includes binary and library.
