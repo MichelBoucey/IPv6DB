@@ -15,7 +15,7 @@ instance FromJSON Addresses where
   parseJSON (Array v) = do
     let rslts = fromJSON <$> V.toList v
     if all isSuccess rslts
-      then pure (Addresses $ fromResult <$> rslts)
+      then pure (Addresses $ fromSuccess <$> rslts)
       else fail "Bad JSON Array Of IPv6 Addresses"
   parseJSON _         = fail "JSON Array Expected"
 
@@ -38,7 +38,7 @@ instance FromJSON Entries where
   parseJSON (Array v) = do
     let ents = fromJSON <$> V.toList v
     if all isSuccess ents
-      then pure (Entries $ fromResult <$> ents)
+      then pure (Entries $ fromSuccess <$> ents)
       else fail "Malformed JSON Array"
   parseJSON _           = fail "JSON Array Expected"
 
@@ -103,7 +103,7 @@ instance FromJSON Resources where
   parseJSON (Array v) = do
     let rsrcs = fromJSON <$> V.toList v
     if all isSuccess rsrcs
-      then pure (Resources $ fromResult <$> rsrcs)
+      then pure (Resources $ fromSuccess <$> rsrcs)
       else fail "Malformed JSON Array Of Resources"
   parseJSON _         = fail "JSON Array Expected"
 
@@ -111,7 +111,7 @@ isSuccess :: Result a -> Bool
 isSuccess (A.Success _) = True
 isSuccess (A.Error _)   = False
 
-fromResult :: Result a -> a
-fromResult (A.Success e) = e
-fromResult (A.Error _)   = Prelude.error "Success value only"
+fromSuccess :: Result a -> a
+fromSuccess (A.Success e) = e
+fromSuccess (A.Error _)   = Prelude.error "Success value only"
 
