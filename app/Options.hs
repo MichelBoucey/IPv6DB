@@ -67,3 +67,4 @@ options =
           <> long "redis-auth"
           <> help "Redis authentication password"
           <> value Nothing )
+

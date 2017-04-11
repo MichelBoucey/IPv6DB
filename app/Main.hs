@@ -58,16 +58,16 @@ ipv6db logger req res = do
           ["ipv6db", "v1", "list", list, "addresses", addr] ->
             listAddressHandler mtd list addr
 
-          _ -> liftIO $ jsonError "Bad URI Request"
-      Left _ -> liftIO $ jsonError "Bad HTTP Method"
+          _ -> liftIO (jsonError "Bad URI Request")
+      Left _ -> liftIO (jsonError "Bad HTTP Method")
     where
-
-      logWith status = liftIO (logger req status Nothing)
 
       withEnv = flip runReaderT
 
       maybeJSONBody :: FromJSON a => IO (Maybe a)
       maybeJSONBody = A.decode <$> strictRequestBody req
+
+      logWith status = liftIO (logger req status Nothing)
 
       -- -------------------------------------------------------------------- --
       -- Endpoint handlers                                                    --
@@ -95,7 +95,7 @@ ipv6db logger req res = do
                 case msrcs of
                   Right srcs ->
                     withEnv env (fromEntries ents srcs) >>= jsonOk
-                  Left  _    -> jsonError "Error"
+                  Left _  -> jsonError "Backend Error"
               Nothing -> badJSONRequest
 
           DELETE -> do
@@ -108,7 +108,7 @@ ipv6db logger req res = do
                     case d of
                       0 -> jsonRes404 (justError "No Deletion Performed")
                       _ -> noContent204
-                  Left _  -> jsonError "Error"
+                  Left _  -> jsonError "Backend Error"
               Nothing -> badJSONRequest
           _      -> methodNotAllowed
 
@@ -139,7 +139,7 @@ ipv6db logger req res = do
                 case emsrcs of
                   Right msrcs ->
                     withEnv env (fromAddresses list addrs msrcs) >>= jsonOk
-                  Left  _     -> jsonServerError "Backend Failure"
+                  Left  _     -> jsonServerError "Backend Error"
               Nothing -> badJSONRequest
 
           DELETE -> do
@@ -152,7 +152,7 @@ ipv6db logger req res = do
                     case d of
                       0 -> jsonRes404 (justError "Resource To Delete Not Found")
                       _ -> noContent204
-                  Left _  -> jsonServerError "Backend Failure"
+                  Left _  -> jsonServerError "Backend Error"
               Nothing -> badJSONRequest
           _      -> methodNotAllowed
 
@@ -165,12 +165,12 @@ ipv6db logger req res = do
             case mjson of
               Just o ->
                 case maybeResource o [("list", String list),("address", String addr)] of
-                  Nothing -> jsonRes400 (justError "Bad JSON Request")
-                  Just rsrc   -> do
+                  Just rsrc -> do
                     rdres <- setSource redisConn mtd' rsrc
                     case rdres of
                       RedisOk -> noContent204
                       error   -> jsonRes400 (encode error)
+                  Nothing   -> jsonRes400 (justError "Bad JSON Request")
               Nothing -> badJSONRequest
 
           GET ->
@@ -192,7 +192,7 @@ ipv6db logger req res = do
                               list
                               (IPv6Addr addr')
                               "Resource Not Found"
-                  Left _     -> jsonError "Error"
+                  Left _     -> jsonError "Backend Error"
               Nothing -> jsonError "Not IPv6 Address in URI"
 
           DELETE ->
@@ -210,13 +210,13 @@ ipv6db logger req res = do
                               list
                               (IPv6Addr addr')
                               "The Resource Doesn't Exist"
-                  Left _ -> jsonError "Error"
+                  Left _ -> jsonError "Backend Error"
               Nothing -> jsonError "Not an IPv6 Address in URI"
           _      -> methodNotAllowed
 
-      -- -----------------------------------------------------------------------
+      -- -------------------------------------------------------------------- --
       -- JSON Responses                                                       --
-      -- -----------------------------------------------------------------------
+      -- -------------------------------------------------------------------- --
 
       jsonOk bs = do
         logWith status200
@@ -230,10 +230,6 @@ ipv6db logger req res = do
         logWith status400
         res (jsonRes status400 bs)
 
-      jsonRes404 bs = do
-        logWith status404
-        res (jsonRes status404 bs)
-
       badJSONRequest = do
         logWith status400
         jsonError "Bad JSON Request"
@@ -242,18 +238,22 @@ ipv6db logger req res = do
         logWith status400
         res (jsonRes status400 $ justError err)
 
-      jsonServerError err = do
-        logWith status500
-        res (jsonRes status500 $ justError err)
+      jsonRes404 bs = do
+        logWith status404
+        res (jsonRes status404 bs)
 
       methodNotAllowed = do
         logWith status405
         res (jsonRes status405 $ justError "Method Not Allowed")
 
-      justError err = "{\"error\":\"" <> err <> "\"}"
+      jsonServerError err = do
+        logWith status500
+        res (jsonRes status500 $ justError err)
 
       jsonRes status =
         responseLBS
           status
           [ ("Content-Type", "application/json; charset=utf-8") ]
+
+      justError err = "{\"error\":\"" <> err <> "\"}"
 
