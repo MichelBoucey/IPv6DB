@@ -8,6 +8,7 @@ import           Data.Aeson               as A
 import qualified Data.ByteString.Lazy     as BSL
 import           Data.Maybe               (fromJust)
 import           Data.Monoid              ((<>))
+import           Data.String              (fromString)
 import qualified Data.Vector              as V
 import           Database.Redis           hiding (String)
 import           Network.HTTP.Types       hiding (noContent204)
@@ -33,7 +34,9 @@ main = do
                FromSocket
                (LogFileNoRotate logFile defaultBufSize)
                timeCache
-  run appPort (ipv6db apLog)
+  runSettings
+    (setPort appPort $ setHost (fromString appHost) defaultSettings)
+    (ipv6db apLog)
 
 ipv6db :: ApacheLogger -> Application
 ipv6db logger req res = do

@@ -7,7 +7,8 @@ import           Options.Applicative
 
 data Options =
   Options
-    { appPort       :: Int
+    { appHost       :: String
+    , appPort       :: Int
     , logFile       :: String
     , redisHost     :: String
     , redisPort     :: Integer
@@ -25,13 +26,19 @@ options :: Parser Options
 options =
   Options
     <$>
+      strOption
+        ( short 'h'
+          <> long "host"
+          <> help "Alternative host"
+          <> showDefault
+          <> value "::" )
+    <*>
       option auto
         ( short 'p'
           <> long "port"
           <> help "Alternative listening port"
           <> showDefault
-          <> value 4446
-          <> metavar "" )
+          <> value 4446 )
     <*>
       strOption
         ( short 'l'
@@ -41,7 +48,7 @@ options =
           <> value "/var/log/ipv6db.log" )
     <*>
       strOption
-        ( short 'h'
+        ( short 'o'
           <> long "redis-host"
           <> help "Redis host"
           <> showDefault
@@ -52,8 +59,7 @@ options =
           <> long "redis-port"
           <> help "Redis listening port"
           <> showDefault
-          <> value 6379
-          <> metavar "" )
+          <> value 6379 )
     <*>
       option auto
         ( short 'd'
