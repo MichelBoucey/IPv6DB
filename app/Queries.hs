@@ -148,15 +148,14 @@ toResource :: T.Text
            -> BS.ByteString
            -> Maybe Resource
 toResource list addr mi bs =
-  case decode (BSL.fromStrict bs) of
-    Just src -> Just
+  decode (BSL.fromStrict bs) >>= \src ->
+    Just $
       Resource
         { list    = list
         , address = IPv6Addr addr
         , ttl     = mi
         , source  = Source src
         }
-    Nothing     -> Nothing
 
 maybeResource :: Value
               -> [(T.Text,Value)]
