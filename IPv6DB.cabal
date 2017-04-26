@@ -5,7 +5,7 @@ description:         IPv6DB is a RESTful microservice using Redis as backend
                      to store lists of IPv6 addresses and attach to each of
                      them any valuable data in a schema-free valid JSON value.
                      Each resource can be permanent or TTLed.
-homepage:            https://github.com/MichelBoucey/IPv6DB
+homepage:            http://ipv6db.cybervisible.com
 license:             BSD3
 license-file:        LICENSE
 author:              Michel Boucey
