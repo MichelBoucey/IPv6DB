@@ -149,7 +149,7 @@ toResource :: T.Text
            -> Maybe Resource
 toResource list addr mi bs =
   decode (BSL.fromStrict bs) >>= \src ->
-    Just $
+    Just
       Resource
         { list    = list
         , address = IPv6Addr addr
@@ -172,7 +172,6 @@ maybeResource v prs =
         A.Error _   -> Nothing
     _         -> Nothing
 
-listAddressSeparator :: T.Text
 getByAddresses :: RedisCtx m f
                => T.Text
                -> Addresses
@@ -213,5 +212,6 @@ toKey :: T.Text -> T.Text -> BS.ByteString
 toKey list addr =
   encodeUtf8 (list <> listAddressSeparator <> addr)
 
+listAddressSeparator :: T.Text
 listAddressSeparator = "/"
 
