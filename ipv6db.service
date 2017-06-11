@@ -1,16 +1,16 @@
 [Unit]
-Description=a RESTful Web service for IPv6-related data
-After=network.target
+Description=IPv6DB RESTful Web service
+Requires=redis.service
+After=redis.service
 Documentation=http://ipv6db.cybervisible.com
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/ipv6db
+ExecStart=/usr/bin/ipv6db -d 6 -h 0.0.0.0
+ExecStop=/usr/bin/killall ipv6db
 Restart=always
 User=ipv6db
 Group=ipv6db
-
-ExecStop=/usr/bin/killall ipv6db
 
 [Install]
 WantedBy=multi-user.target
