@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE LambdaCase        #-}
+{-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 
 import           Control.Monad.IO.Class   (liftIO)
 import           Control.Monad.Reader
@@ -113,10 +114,10 @@ ipv6db logger req res = do
         env@Env{..} <- ask
         liftIO $ case mtd of
 
-          mtd' | mtd' == PUT || mtd' == POST -> do
-            mjson <- maybeJSONBody
-            case mjson of
-              Just (Array v) -> do
+          mtd' | mtd' == PUT || mtd' == POST ->
+            maybeJSONBody >>= maybe badJSONRequest answer
+            where
+              answer (Array v) = do
                 let rsrcs =
                       (\o -> maybeResource o [("list",String list)]) <$> V.toList v
                 if Nothing `notElem` rsrcs
@@ -126,54 +127,47 @@ ipv6db logger req res = do
                       then noContent204
                       else jsonRes400 (encode $ filter (/= RedisOk) results)
                   else badJSONRequest
-              _              -> badJSONRequest
 
-          GET -> do
-            maybeJSONBody >>= \case
-              Just addrs -> do
-                emsrcs <- runRedis redisConn (getByAddresses list addrs)
-                case emsrcs of
-                  Right msrcs ->
-                    withEnv env (fromAddresses list addrs msrcs) >>= jsonOk
-                  Left  _     -> jsonServerError "Backend Error"
-              Nothing -> badJSONRequest
+          GET -> maybeJSONBody >>= maybe badJSONRequest answer
+                 where
+                   answer addrs =
+                     runRedis redisConn (getByAddresses list addrs) >>= \case
+                       Right msrcs ->
+                         withEnv env (fromAddresses list addrs msrcs) >>= jsonOk
+                       Left  _     -> jsonServerError "Backend Error"
 
-          DELETE -> do
-            mjson <- maybeJSONBody
-            case mjson of
-              Just addrs -> do
-                ed <- runRedis redisConn (delByAddresses list addrs)
-                case ed of
+          DELETE ->
+            maybeJSONBody >>= maybe badJSONRequest answer
+            where
+              answer addrs =
+                runRedis redisConn (delByAddresses list addrs) >>= \case
                   Right d ->
                     case d of
                       0 -> jsonRes404 (justError "Resource To Delete Not Found")
                       _ -> noContent204
                   Left _  -> jsonServerError "Backend Error"
-              Nothing -> badJSONRequest
+
           _      -> methodNotAllowed
 
       listAddressHandler mtd list addr = do
         Env{..} <- ask
         liftIO $ case mtd of
 
-          mtd' | mtd' == PUT || mtd' == POST -> do
-            mjson <- maybeJSONBody
-            case mjson of
-              Just o ->
+          mtd' | mtd' == PUT || mtd' == POST ->
+            maybeJSONBody >>= maybe badJSONRequest answer
+            where
+              answer o =
                 case maybeResource o [("list", String list),("address", String addr)] of
-                  Just rsrc -> do
-                    rdres <- setSource redisConn mtd' rsrc
-                    case rdres of
+                  Just rsrc ->
+                    setSource redisConn mtd' rsrc >>= \case
                       RedisOk -> noContent204
                       error   -> jsonRes400 (encode error)
                   Nothing   -> jsonRes400 (justError "Bad JSON Request")
-              Nothing -> badJSONRequest
 
           GET ->
             case maybeIPv6Addr addr of
-              Just (IPv6Addr addr') -> do
-                emsrc <- liftIO (runRedis redisConn $ getSource list addr')
-                case emsrc of
+              Just (IPv6Addr addr') ->
+                liftIO (runRedis redisConn $ getSource list addr') >>= \case
                   Right msrc ->
                     case msrc of
                       Just src -> do
@@ -193,9 +187,8 @@ ipv6db logger req res = do
 
           DELETE ->
             case maybeIPv6Addr addr of
-              Just (IPv6Addr addr') -> do
-                er <- liftIO (runRedis redisConn $ delSource list addr')
-                case er of
+              Just (IPv6Addr addr') ->
+                liftIO (runRedis redisConn $ delSource list addr') >>= \case
                   Right i ->
                     case i of
                       1 -> noContent204
@@ -208,43 +201,28 @@ ipv6db logger req res = do
                               "The Resource Doesn't Exist"
                   Left _ -> jsonError "Backend Error"
               Nothing -> jsonError "Not an IPv6 Address in URI"
+
           _      -> methodNotAllowed
 
       -- -------------------------------------------------------------------- --
       -- JSON Responses                                                       --
       -- -------------------------------------------------------------------- --
 
-      jsonOk bs = do
-        logWith status200
-        res (jsonRes status200 bs)
+      jsonOk bs = logWith status200 >> res (jsonRes status200 bs)
 
-      noContent204 = do
-        logWith status204
-        res (responseLBS status204 [] BSL.empty)
+      noContent204 = logWith status204 >> res (responseLBS status204 [] BSL.empty)
 
-      jsonRes400 bs = do
-        logWith status400
-        res (jsonRes status400 bs)
+      jsonRes400 bs = logWith status400 >> res (jsonRes status400 bs)
 
-      badJSONRequest = do
-        logWith status400
-        jsonError "Bad JSON Request"
+      badJSONRequest = logWith status400 >> jsonError "Bad JSON Request"
 
-      jsonError err = do
-        logWith status400
-        res (jsonRes status400 $ justError err)
+      jsonError err = logWith status400 >> res (jsonRes status400 $ justError err)
 
-      jsonRes404 bs = do
-        logWith status404
-        res (jsonRes status404 bs)
+      jsonRes404 bs = logWith status404 >> res (jsonRes status404 bs)
 
-      methodNotAllowed = do
-        logWith status405
-        res (jsonRes status405 $ justError "Method Not Allowed")
+      methodNotAllowed = logWith status405 >> res (jsonRes status405 $ justError "Method Not Allowed")
 
-      jsonServerError err = do
-        logWith status500
-        res (jsonRes status500 $ justError err)
+      jsonServerError err = logWith status500 >> res (jsonRes status500 $ justError err)
 
       jsonRes status =
         responseLBS
