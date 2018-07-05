@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE LambdaCase        #-}
 
 import           Control.Monad.IO.Class   (liftIO)
 import           Control.Monad.Reader
@@ -80,39 +81,32 @@ ipv6db logger req res = do
         env@Env{..} <- ask
         liftIO $ case mtd of
 
-          mtd' | mtd' == PUT || mtd' == POST -> do
-            mjson <- maybeJSONBody
-            case mjson of
-              Just (Resources rsrcs) -> do
-                results <- mapM (setSource redisConn mtd') rsrcs
-                if all (== RedisOk) results
-                  then noContent204
-                  else jsonRes400 (encode results)
-              Nothing -> badJSONRequest
+          mtd' | mtd' == PUT || mtd' == POST ->
+            maybeJSONBody >>= maybe badJSONRequest answer
+            where
+              answer (Resources rsrcs) = do
+                  results <- mapM (setSource redisConn mtd') rsrcs
+                  if all (== RedisOk) results
+                    then noContent204
+                    else jsonRes400 (encode results)
 
-          GET -> do
-            mjson <- maybeJSONBody
-            case mjson of
-              Just ents -> do
-                msrcs <- runRedis redisConn (getByEntries ents)
-                case msrcs of
-                  Right srcs ->
-                    withEnv env (fromEntries ents srcs) >>= jsonOk
-                  Left _  -> jsonError "Backend Error"
-              Nothing -> badJSONRequest
+          GET -> maybeJSONBody >>= maybe badJSONRequest answer
+                 where
+                   answer ents =
+                     runRedis redisConn (getByEntries ents) >>= \case
+                       Right srcs -> withEnv env (fromEntries ents srcs) >>= jsonOk
+                       Left _  -> jsonError "Backend Error"
 
-          DELETE -> do
-            mjson <- maybeJSONBody
-            case mjson of
-              Just ents -> do
-                ed <- runRedis redisConn (delByEntries ents)
-                case ed of
-                  Right d ->
-                    case d of
-                      0 -> jsonRes404 (justError "No Deletion Performed")
-                      _ -> noContent204
-                  Left _  -> jsonError "Backend Error"
-              Nothing -> badJSONRequest
+          DELETE -> maybeJSONBody >>= maybe badJSONRequest answer
+                    where
+                      answer ents = do
+                        runRedis redisConn (delByEntries ents) >>= \case
+                          Right d ->
+                            case d of
+                              0 -> jsonRes404 (justError "No Deletion Performed")
+                              _ -> noContent204
+                          Left _  -> jsonError "Backend Error"
+
           _      -> methodNotAllowed
 
       listHandler mtd list = do
@@ -135,8 +129,7 @@ ipv6db logger req res = do
               _              -> badJSONRequest
 
           GET -> do
-            mjson <- maybeJSONBody
-            case mjson of
+            maybeJSONBody >>= \case
               Just addrs -> do
                 emsrcs <- runRedis redisConn (getByAddresses list addrs)
                 case emsrcs of
