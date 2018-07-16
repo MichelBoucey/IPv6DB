@@ -1,5 +1,5 @@
 name:                IPv6DB
-version:             0.2.6
+version:             0.3.0
 synopsis:            A RESTful microService for IPv6-related data
 description:         IPv6DB is a RESTful microservice using Redis as backend
                      to store lists of IPv6 addresses and attach to each of
