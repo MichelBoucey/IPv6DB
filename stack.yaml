@@ -34,6 +34,7 @@ packages:
 # (e.g., acme-missiles-0.3)
 extra-deps:
 - hedis-0.10.4
+- IPv6Addr-1.1.2
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
