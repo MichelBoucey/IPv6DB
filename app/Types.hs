@@ -13,7 +13,7 @@ import           Prelude              hiding (error)
 
 import           Network.IPv6DB.Types
 
-data Env = Env { redisConn :: Connection }
+newtype Env = Env { redisConn :: Connection }
 
 data RedisResponse
   = RedisOk
@@ -32,7 +32,7 @@ instance ToJSON RedisResponse where
       ]
   toJSON _ = Null
 
-data RedisErrors = RedisErrors [RedisResponse] deriving (Eq, Show)
+newtype RedisErrors = RedisErrors [RedisResponse] deriving (Eq, Show)
 
 instance ToJSON RedisErrors where
   toJSON (RedisErrors rrs) =
