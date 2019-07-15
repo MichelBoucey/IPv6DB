@@ -100,7 +100,7 @@ ipv6db logger req res = do
 
           DELETE -> maybeJSONBody >>= maybe badJSONRequest answer
                     where
-                      answer ents = do
+                      answer ents =
                         runRedis redisConn (delByEntries ents) >>= \case
                           Right d ->
                             case d of
