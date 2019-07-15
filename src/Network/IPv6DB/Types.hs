@@ -9,7 +9,7 @@ import qualified Data.Text       as T
 import qualified Data.Vector     as V
 import           Text.IPv6Addr
 
-data Addresses = Addresses [IPv6Addr]
+newtype Addresses = Addresses [IPv6Addr]
 
 instance FromJSON Addresses where
   parseJSON (Array v) = do
@@ -22,7 +22,7 @@ instance FromJSON Addresses where
 data Entry =
   Entry
     { list    :: !T.Text
-    , address :: !IPv6Addr
+    , address :: IPv6Addr
     } deriving (Eq, Show)
 
 instance FromJSON Entry where
@@ -32,7 +32,7 @@ instance FromJSON Entry where
     pure Entry{..}
   parseJSON _          = fail "JSON Object Expected"
 
-data Entries = Entries [Entry]
+newtype Entries = Entries [Entry]
 
 instance FromJSON Entries where
   parseJSON (Array v) = do
@@ -42,7 +42,7 @@ instance FromJSON Entries where
       else fail "Malformed JSON Array"
   parseJSON _         = fail "JSON Array Expected"
 
-data Source = Source !Value deriving (Eq, Show)
+newtype Source = Source Value deriving (Eq, Show)
 
 instance ToJSON Source where
   toJSON (Source v) = v
@@ -93,7 +93,7 @@ instance FromJSON Resource where
         source  <- o .: "source"
         return Resource{..}
 
-data Resources = Resources [Resource] deriving (Eq, Show)
+newtype Resources = Resources [Resource] deriving (Eq, Show)
 
 instance ToJSON Resources where
   toJSON (Resources rs) =
