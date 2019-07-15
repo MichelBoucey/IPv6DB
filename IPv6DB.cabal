@@ -31,7 +31,7 @@ library
                     , IPv6Addr             >= 1.1.0 && < 1.2.0
                     , hedis                >= 0.9.4 && < 0.11
                     , http-types           >= 0.9.1 && < 0.13
-                    , unordered-containers >= 0.2.7.2 && < 0.2.10
+                    , unordered-containers >= 0.2.7.2 && < 0.2.11
                     , mtl                  >= 2.2.1 && < 2.3
                     , text                 >= 1.2.2 && < 1.3
                     , vector               >= 0.11.0.0 && < 0.13
@@ -51,7 +51,7 @@ executable ipv6db
                   , IPv6DB
                   , hedis                >= 0.9.4 && < 0.11
                   , http-types           >= 0.9.1 && < 0.13
-                  , unordered-containers >= 0.2.7.2 && < 0.2.10
+                  , unordered-containers >= 0.2.7.2 && < 0.2.11
                   , mtl                  >= 2.2.1 && < 2.3
                   , optparse-applicative >= 0.12.1.0 && < 0.15
                   , text                 >= 1.2.2 && < 1.3
