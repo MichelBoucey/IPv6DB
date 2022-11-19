@@ -1,15 +1,13 @@
 {-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
-{-# LANGUAGE LambdaCase        #-}
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 
-import           Control.Monad.IO.Class   (liftIO)
 import           Control.Monad.Reader
 import           Data.Aeson               as A
 import qualified Data.ByteString.Lazy     as BSL
 import           Data.Maybe               (fromJust)
-import           Data.Monoid              ((<>))
 import           Data.String              (fromString)
 import qualified Data.Vector              as V
 import           Database.Redis           hiding (String)
@@ -96,7 +94,7 @@ ipv6db logger req res = do
                    answer ents =
                      runRedis redisConn (getByEntries ents) >>= \case
                        Right srcs -> withEnv env (fromEntries ents srcs) >>= jsonOk
-                       Left _  -> jsonError "Backend Error"
+                       Left _     -> jsonError "Backend Error"
 
           DELETE -> maybeJSONBody >>= maybe badJSONRequest answer
                     where

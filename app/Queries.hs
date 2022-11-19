@@ -1,17 +1,17 @@
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE RecordWildCards       #-}
+{-# LANGUAGE CPP               #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 module Queries where
 
-import           Control.Monad        (zipWithM)
 import           Control.Monad.Reader
 import           Data.Aeson           as A
+import qualified Data.Aeson.KeyMap    as KM
 import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
-import           Data.HashMap.Lazy
+import           Data.HashMap.Lazy    (fromList)
 import           Data.Maybe           (fromJust)
-import           Data.Monoid          ((<>))
 import qualified Data.Text            as T
 import           Data.Text.Encoding
 import           Database.Redis       as R hiding (decode)
@@ -61,7 +61,7 @@ setSource ::Connection -> StdMethod -> Resource -> IO RedisResponse
 setSource _ _ ResourceError{} = undefined
 setSource conn mtd Resource{ttl=ttlr,..} = do
   er <- runRedis conn $ setOpts
-          (toKey list $ fromIPv6Addr address)
+          (toKey list $ unIPv6Addr address)
           (BSL.toStrict $ encode source)
           SetOpts
             { setSeconds   = ttlr
@@ -164,10 +164,10 @@ maybeResource v prs =
   case v of
     Object hm -> do
       let hm' =
-            if member "ttl" hm
+            if KM.member "ttl" hm
               then hm
-              else insert "ttl" Null hm
-      case fromJSON (Object $ union hm' $ fromList prs) of
+              else KM.insert "ttl" Null hm
+      case fromJSON (Object $ KM.union hm' $ KM.fromHashMapText $ fromList prs) of
         A.Success r -> Just r
         A.Error _   -> Nothing
     _         -> Nothing
@@ -199,11 +199,11 @@ addressesToKeys :: T.Text
                 -> Addresses
                 -> [BS.ByteString]
 addressesToKeys list (Addresses addrs) =
-  toKey list . fromIPv6Addr <$> addrs
+  toKey list . unIPv6Addr <$> addrs
 
 fromEnts :: Entries -> [BS.ByteString]
 fromEnts (Entries ents) =
-  (\Entry{..} -> toKey list (fromIPv6Addr address)) <$> ents
+  (\Entry{..} -> toKey list (unIPv6Addr address)) <$> ents
 
 toEntry :: T.Text -> IPv6Addr -> Entry
 toEntry list address = Entry { list = list, address = address }

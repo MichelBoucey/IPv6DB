@@ -4,11 +4,11 @@
 
 module Types where
 
-import           Database.Redis
 import           Data.Aeson           as A
 import qualified Data.ByteString      as BS
 import           Data.Text.Encoding
 import qualified Data.Vector          as V
+import           Database.Redis
 import           Prelude              hiding (error)
 
 import           Network.IPv6DB.Types

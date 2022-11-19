@@ -4,9 +4,9 @@
 
 module Network.IPv6DB.Types where
 
-import           Data.Aeson      as A
-import qualified Data.Text       as T
-import qualified Data.Vector     as V
+import           Data.Aeson    as A
+import qualified Data.Text     as T
+import qualified Data.Vector   as V
 import           Text.IPv6Addr
 
 newtype Addresses = Addresses [IPv6Addr]
@@ -61,7 +61,7 @@ data Resource
       { list    :: !T.Text
       , address :: !IPv6Addr
       , error   :: !T.Text
-      } 
+      }
   deriving (Eq, Show)
 
 instance ToJSON Resource where
