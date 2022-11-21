@@ -17,7 +17,7 @@ cabal-version:       >=1.10
 extra-source-files:  README.md
                    , IPv6DB_APIv1.md
 
-Tested-With: GHC == 9.2.5
+Tested-With: GHC == 9.2.1
 
 Source-Repository head
   Type: git
@@ -35,7 +35,7 @@ library
                     , http-types           >= 0.9.1 && < 0.13
                     , unordered-containers >= 0.2.7 && < 0.3
                     , mtl                  >= 2.2.1 && < 2.3
-                    , text                 == 2.0.*
+                    , text                 >= 1.2.5.0 && < 2.1
                     , vector               >= 0.11.0.0 && < 0.13
   default-language:   Haskell2010
 
@@ -56,7 +56,7 @@ executable ipv6db
                   , unordered-containers >= 0.2.7 && < 0.3
                   , mtl                  >= 2.2.1 && < 2.3
                   , optparse-applicative >= 0.12.1.0 && < 0.16
-                  , text                 == 2.0.*
+                  , text                 >= 1.2.5.0 && < 2.1
                   , vector               >= 0.11.0.0 && < 0.13
                   , wai                  >= 3.2.1 && < 3.3
                   , wai-logger           >= 2.2.7 && < 2.4
