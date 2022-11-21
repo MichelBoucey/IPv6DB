@@ -19,7 +19,7 @@ opts :: ParserInfo Options
 opts = info (options <**> helper)
   ( fullDesc
     <> progDesc "RESTful Web Service for IPv6 related data"
-    <> header "IPv6DB v0.3.1 APIv1, (c) Michel Boucey 2017-2018" )
+    <> header "IPv6DB v0.3.3 APIv1, (c) Michel Boucey 2017-2022" )
 
 options :: Parser Options
 options =
