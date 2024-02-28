@@ -29,7 +29,7 @@ library
   build-depends:      aeson                >= 0.7 && < 2.3
                     , attoparsec           >= 0.13.1.0 && < 0.15
                     , base                 >= 4.12 && < 5.0
-                    , bytestring           == 0.11.*
+                    , bytestring           >= 0.10 && < 0.12
                     , IPv6Addr             >= 2.0.5 && < 2.1
                     , hedis                == 0.15.*
                     , http-types           >= 0.9.1 && < 0.13
@@ -69,7 +69,7 @@ test-suite tests
   type:               exitcode-stdio-1.0
   hs-source-dirs:     tests
   main-is:            hspec.hs
-  build-depends:      aeson       == 2.0.*
+  build-depends:      aeson       >= 0.7 && < 2.3
                     , hspec       >= 2.1.10 && < 2.8
                     , base        >= 4.12 && < 5
                     , IPv6DB
