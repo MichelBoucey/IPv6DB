@@ -5,6 +5,7 @@
 
 module Queries where
 
+import           Control.Monad        (zipWithM)
 import           Control.Monad.Reader
 import           Data.Aeson           as A
 import qualified Data.Aeson.KeyMap    as KM
