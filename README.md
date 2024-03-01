@@ -6,7 +6,7 @@ IPv6DB is a RESTful microservice using Redis as backend to store lists of IPv6 a
 
 ```bash
 [user@box ~]$ ipv6db --help
-IPv6DB v0.3.3 APIv1, (c) Michel Boucey 2017-2022
+IPv6DB v0.3.3.1 APIv1, (c) Michel Boucey 2017-2024
 
 Usage: ipv6db [-h|--host ARG] [-p|--port ARG] [-l|--log-file ARG]
               [-o|--redis-host ARG] [-r|--redis-port ARG]
