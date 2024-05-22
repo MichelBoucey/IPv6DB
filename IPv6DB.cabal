@@ -17,7 +17,7 @@ cabal-version:       >=1.10
 extra-source-files:  README.md
                    , IPv6DB_APIv1.md
 
-Tested-With: GHC ==8.8.4 || ==8.10.7 || ==9.0.2 || ==9.2.8 || ==9.4.8 || ==9.6.3 || ==9.8.1
+Tested-With: GHC ==8.8.4 || ==8.10.7 || ==9.0.2 || ==9.2.8 || ==9.4.8 || ==9.6.3 || ==9.8.2
 
 Source-Repository head
   Type: git
