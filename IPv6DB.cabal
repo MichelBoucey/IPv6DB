@@ -17,7 +17,7 @@ cabal-version:       >=1.10
 extra-source-files:  README.md
                    , IPv6DB_APIv1.md
 
-Tested-With: GHC ==8.10.7 || ==9.0.2 || ==9.2.8 || ==9.4.8 || ==9.6.5 || ==9.8.2
+Tested-With: GHC ==8.10.7 || ==9.0.2 || ==9.2.8 || ==9.4.8 || ==9.6.5 || ==9.8.2 || ==9.10.1
 
 Source-Repository head
   Type: git
@@ -28,7 +28,7 @@ library
   exposed-modules:    Network.IPv6DB.Types 
   build-depends:      aeson                >= 0.7 && < 2.3
                     , attoparsec           >= 0.13.1.0 && < 0.15
-                    , base                 >= 4.12 && < 4.20
+                    , base                 >= 4.12 && < 5
                     , bytestring           >= 0.10 && < 0.13
                     , IPv6Addr             >= 2.0.5 && < 2.1
                     , hedis                == 0.15.*
@@ -46,7 +46,7 @@ executable ipv6db
                   , Queries
                   , Types
   build-depends:    aeson                >= 0.7 && < 2.3
-                  , base                 >= 4.12 && < 4.20
+                  , base                 >= 4.12 && < 5
                   , bytestring           >= 0.10 && < 0.13
                   , fast-logger          >= 2.4.8 && < 3.3
                   , IPv6Addr             >= 2.0 && < 2.1
