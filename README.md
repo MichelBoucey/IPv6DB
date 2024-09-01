@@ -1,6 +1,6 @@
 # IPv6DB
 
-## A RESTful Web service for IPv6 related data ![CI](https://github.com/MichelBoucey/IPv6DB/actions/workflows/haskell-ci.yml/badge.svg)
+## A RESTful Web service for IPv6 related data ![CI](https://github.com/MichelBoucey/IPv6DB/actions/workflows/haskell-ci.yml/badge.svg) [![Hackage](https://img.shields.io/hackage/v/IPv6DB.svg)](https://hackage.haskell.org/package/IPv6DB)
 
 IPv6DB is a RESTful microservice using Redis as backend to store lists of IPv6 addresses and attach to each of them any valuable data in a schema-free valid JSON value. Each resource can be permanent or TTLed.
 
