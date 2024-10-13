@@ -59,7 +59,7 @@ executable ipv6db
                   , text                 >= 1.2.4.0 && < 2.2
                   , vector               >= 0.11.0.0 && < 0.14
                   , wai                  >= 3.2.1 && < 3.3
-                  , wai-logger           >= 2.2.7 && < 2.5
+                  , wai-logger           >= 2.2.7 && < 2.6
                   , warp                 >= 3.3.16 && < 3.5
 
   default-language:  Haskell2010
