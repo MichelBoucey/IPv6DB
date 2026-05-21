@@ -35,12 +35,12 @@ Source-Repository head
 library
   hs-source-dirs:     src
   exposed-modules:    Network.IPv6DB.Types 
-  build-depends:      aeson                >= 0.7 && < 2.3
+  build-depends:      aeson                >= 0.7 && < 2.4
                     , attoparsec           >= 0.13.1.0 && < 0.15
                     , base                 >= 4.12 && < 5
                     , bytestring           >= 0.10 && < 0.13
                     , IPv6Addr             >= 2.0.5 && < 2.1
-                    , hedis                == 0.15.*
+                    , hedis                >= 0.15 && < 0.17
                     , http-types           >= 0.9.1 && < 0.13
                     , unordered-containers >= 0.2.7 && < 0.3
                     , mtl                  >= 2.2.1 && < 2.4
@@ -54,13 +54,13 @@ executable ipv6db
   other-modules:    Options
                   , Queries
                   , Types
-  build-depends:    aeson                >= 0.7 && < 2.3
+  build-depends:    aeson                >= 0.7 && < 2.4
                   , base                 >= 4.12 && < 5
                   , bytestring           >= 0.10 && < 0.13
                   , fast-logger          >= 2.4.8 && < 3.3
                   , IPv6Addr             >= 2.0 && < 2.1
                   , IPv6DB
-                  , hedis                == 0.15.*
+                  , hedis                >= 0.15 && < 0.17
                   , http-types           >= 0.9.1 && < 0.13
                   , unordered-containers >= 0.2.7 && < 0.3
                   , mtl                  >= 2.2.1 && < 2.4
@@ -78,7 +78,7 @@ test-suite tests
   type:               exitcode-stdio-1.0
   hs-source-dirs:     tests
   main-is:            hspec.hs
-  build-depends:      aeson       >= 0.7 && < 2.3
+  build-depends:      aeson       >= 0.7 && < 2.4
                     , hspec       >= 2.1.10 && < 2.12
                     , base        >= 4.12 && < 5
                     , IPv6DB
