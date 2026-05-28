@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -5,19 +6,26 @@
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 
 import           Control.Monad.Reader
-import           Data.Aeson               as A
-import qualified Data.ByteString.Lazy     as BSL
-import           Data.Maybe               (fromJust)
-import           Data.String              (fromString)
-import qualified Data.Vector              as V
-import           Database.Redis           hiding (String)
-import           Network.HTTP.Types       hiding (noContent204)
+import           Data.Aeson
+import qualified Data.ByteString.Lazy      as BSL
+import           Data.Maybe                (fromJust)
+import           Data.String               (fromString)
+import qualified Data.Vector               as V
+#if MIN_VERSION_hedis(0,16,0)
+import           Database.Redis            hiding (String, decode, encode)
+import           Database.Redis.Commands   ()
+import           Database.Redis.Connection ()
+import           Database.Redis.Types      ()
+#else
+import           Database.Redis            hiding (String, decode, encode)
+#endif
+import           Network.HTTP.Types        hiding (noContent204)
 import           Network.IPv6DB.Types
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Network.Wai.Logger
-import           Options.Applicative      (execParser)
-import           Prelude                  hiding (error)
+import           Options.Applicative       (execParser)
+import           Prelude                   hiding (error)
 import           System.Log.FastLogger
 import           Text.IPv6Addr
 
@@ -42,11 +50,18 @@ ipv6db :: ApacheLogger -> Application
 ipv6db logger req res = do
   Options{..} <- execParser opts
   conn <- checkedConnect $
+#if MIN_VERSION_hedis(0,16,0)
+    defaultConnectInfo
+      { connectAddr     = ConnectAddrHostPort redisHost (fromInteger redisPort)
+      , connectAuth     = redisAuth
+      , connectDatabase = redisDatabase }
+#else
     defaultConnectInfo
       { connectHost     = redisHost
       , connectPort     = PortNumber (fromInteger redisPort)
       , connectAuth     = redisAuth
       , connectDatabase = redisDatabase }
+#endif
   withEnv Env { redisConn = conn } $
     case parseMethod (requestMethod req) of
       Right mtd ->
@@ -68,7 +83,7 @@ ipv6db logger req res = do
       withEnv = flip runReaderT
 
       maybeJSONBody :: FromJSON a => IO (Maybe a)
-      maybeJSONBody = A.decode <$> strictRequestBody req
+      maybeJSONBody = decode <$> strictRequestBody req
 
       logWith status = liftIO (logger req status Nothing)
 
@@ -171,7 +186,7 @@ ipv6db logger req res = do
                       Just src -> do
                         ttls <- ttlSource redisConn list addr'
                         case toResource list addr' ttls src of
-                          Just rsrc -> jsonOk (A.encode rsrc)
+                          Just rsrc -> jsonOk (encode rsrc)
                           Nothing   -> jsonError "Can't Build Resource"
                       Nothing  ->
                         jsonRes404 $

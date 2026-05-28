@@ -1,16 +1,16 @@
 name:                IPv6DB
-version:             0.3.3.4
+version:             0.3.3.5
 synopsis:            A RESTful microService for IPv6-related data
 description:         IPv6DB is a RESTful microservice using Redis as backend
                      to store lists of IPv6 addresses and attach to each of
                      them any valuable data in a schema-free valid JSON value.
                      Each resource can be permanent or TTLed.
-homepage:            http://ipv6db.functor.cloud
+homepage:            https://github.com/MichelBoucey/IPv6DB
 license:             BSD3
 license-file:        LICENSE
 author:              Michel Boucey
 maintainer:          michel.boucey@gmail.com
-copyright:           (c) 2017-2025 - Michel Boucey
+copyright:           (c) 2017-2026 - Michel Boucey
 category:            network, database
 build-type:          Simple
 cabal-version:       >=1.10
@@ -25,8 +25,8 @@ Tested-With:
    || ==9.4.8
    || ==9.6.7
    || ==9.8.4
-   || ==9.10.2
-   || ==9.12.2
+   || ==9.10.3
+   || ==9.12.4
 
 Source-Repository head
   Type: git
@@ -35,15 +35,9 @@ Source-Repository head
 library
   hs-source-dirs:     src
   exposed-modules:    Network.IPv6DB.Types 
-  build-depends:      aeson                >= 0.7 && < 2.3
-                    , attoparsec           >= 0.13.1.0 && < 0.15
+  build-depends:      aeson                >= 0.7 && < 2.4
                     , base                 >= 4.12 && < 5
-                    , bytestring           >= 0.10 && < 0.13
                     , IPv6Addr             >= 2.0.5 && < 2.1
-                    , hedis                == 0.15.*
-                    , http-types           >= 0.9.1 && < 0.13
-                    , unordered-containers >= 0.2.7 && < 0.3
-                    , mtl                  >= 2.2.1 && < 2.4
                     , text                 >= 1.2.4.0 && < 2.2
                     , vector               >= 0.11.0.0 && < 0.14
   default-language:   Haskell2010
@@ -54,13 +48,13 @@ executable ipv6db
   other-modules:    Options
                   , Queries
                   , Types
-  build-depends:    aeson                >= 0.7 && < 2.3
+  build-depends:    aeson                >= 0.7 && < 2.4
                   , base                 >= 4.12 && < 5
                   , bytestring           >= 0.10 && < 0.13
                   , fast-logger          >= 2.4.8 && < 3.3
                   , IPv6Addr             >= 2.0 && < 2.1
                   , IPv6DB
-                  , hedis                == 0.15.*
+                  , hedis                >= 0.15 && < 0.17
                   , http-types           >= 0.9.1 && < 0.13
                   , unordered-containers >= 0.2.7 && < 0.3
                   , mtl                  >= 2.2.1 && < 2.4
@@ -78,7 +72,7 @@ test-suite tests
   type:               exitcode-stdio-1.0
   hs-source-dirs:     tests
   main-is:            hspec.hs
-  build-depends:      aeson       >= 0.7 && < 2.3
+  build-depends:      aeson       >= 0.7 && < 2.4
                     , hspec       >= 2.1.10 && < 2.12
                     , base        >= 4.12 && < 5
                     , IPv6DB
