@@ -72,6 +72,20 @@ setSource conn mtd Resource{ttl=ttlr,..} = do
   er <- runRedis conn $ setOpts
           (toKey list $ unIPv6Addr address)
           (BSL.toStrict $ A.encode source)
+#if MIN_VERSION_hedis(0,16,0)
+          SetOpts
+            { setSeconds   = ttlr
+            , setMilliseconds = Nothing
+            , setCondition =
+                case mtd of
+                  PUT  -> Just Xx
+                  POST -> Just Nx
+                  _    -> Nothing
+            , setUnixSeconds = Nothing
+            , setUnixMilliseconds = Nothing
+            , setKeepTTL = False
+            }
+#else
           SetOpts
             { setSeconds   = ttlr
             , setMilliseconds = Nothing
@@ -81,6 +95,7 @@ setSource conn mtd Resource{ttl=ttlr,..} = do
                   POST -> Just Nx
                   _    -> Nothing
             }
+#endif
   return $
     case er of
       Right s ->
