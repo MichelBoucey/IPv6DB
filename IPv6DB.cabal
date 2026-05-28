@@ -1,16 +1,16 @@
 name:                IPv6DB
-version:             0.3.3.4
+version:             0.3.3.5
 synopsis:            A RESTful microService for IPv6-related data
 description:         IPv6DB is a RESTful microservice using Redis as backend
                      to store lists of IPv6 addresses and attach to each of
                      them any valuable data in a schema-free valid JSON value.
                      Each resource can be permanent or TTLed.
-homepage:            http://ipv6db.functor.cloud
+homepage:            https://github.com/MichelBoucey/IPv6DB
 license:             BSD3
 license-file:        LICENSE
 author:              Michel Boucey
 maintainer:          michel.boucey@gmail.com
-copyright:           (c) 2017-2025 - Michel Boucey
+copyright:           (c) 2017-2026 - Michel Boucey
 category:            network, database
 build-type:          Simple
 cabal-version:       >=1.10
