@@ -17,9 +17,10 @@ import qualified Data.Text            as T
 import           Data.Text.Encoding
 #if MIN_VERSION_hedis(0,16,0)
 import           Database.Redis
-import           Database.Redis.Commands
-import           Database.Redis.Connection
-import           Database.Redis.Types
+import           Database.Redis.Commands ()
+import           Database.Redis.Connection ()
+import           Database.Redis.Types ()
+import qualified Data.List.NonEmpty   as N
 #else
 import           Database.Redis
 #endif
@@ -148,7 +149,12 @@ delSource :: RedisCtx m f
           => T.Text
           -> T.Text
           -> m (f Integer)
-delSource list addr = del [ toKey list addr ]
+delSource list addr =
+#if MIN_VERSION_hedis(0,16,0)
+  del (N.fromList [ toKey list addr ])
+#else
+  del [ toKey list addr ]
+#endif
 
 toResource :: T.Text
            -> T.Text
@@ -185,23 +191,41 @@ getByAddresses :: RedisCtx m f
                -> Addresses
                -> m (f [Maybe BS.ByteString])
 getByAddresses list addrs =
+#if MIN_VERSION_hedis(0,16,0)
+  mget (N.fromList $ addressesToKeys list addrs)
+#else
   mget (addressesToKeys list addrs)
+#endif
 
 getByEntries :: RedisCtx m f
              => Entries
              -> m (f [Maybe BS.ByteString])
-getByEntries ents = mget (fromEnts ents)
+getByEntries ents =
+#if MIN_VERSION_hedis(0,16,0)
+  mget (N.fromList $ fromEnts ents)
+#else
+  mget (fromEnts ents)
+#endif
 
 delByAddresses :: RedisCtx m f
                => T.Text
                -> Addresses -> m (f Integer)
 delByAddresses list addrs =
+#if MIN_VERSION_hedis(0,16,0)
+  del (N.fromList $ addressesToKeys list addrs)
+#else
   del (addressesToKeys list addrs)
+#endif
 
 delByEntries :: RedisCtx m f
              => Entries
              -> m (f Integer)
-delByEntries ents = del (fromEnts ents)
+delByEntries ents =
+#if MIN_VERSION_hedis(0,16,0)
+  del (N.fromList $ fromEnts ents)
+#else
+  del (fromEnts ents)
+#endif
 
 addressesToKeys :: T.Text
                 -> Addresses
