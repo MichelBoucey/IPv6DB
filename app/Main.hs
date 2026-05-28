@@ -17,7 +17,7 @@ import           Database.Redis.Commands   ()
 import           Database.Redis.Connection ()
 import           Database.Redis.Types      ()
 #else
-import           Database.Redis
+import           Database.Redis            hiding (String, decode, encode)
 #endif
 import           Network.HTTP.Types        hiding (noContent204)
 import           Network.IPv6DB.Types
