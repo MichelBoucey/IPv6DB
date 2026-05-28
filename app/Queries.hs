@@ -7,7 +7,7 @@ module Queries where
 
 import           Control.Monad        (zipWithM)
 import           Control.Monad.Reader
-import           Data.Aeson           as A
+import qualified Data.Aeson           as A
 import qualified Data.Aeson.KeyMap    as KM
 import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
@@ -15,7 +15,14 @@ import           Data.HashMap.Lazy    (fromList)
 import           Data.Maybe           (fromJust)
 import qualified Data.Text            as T
 import           Data.Text.Encoding
-import           Database.Redis       as R hiding (decode)
+#if MIN_VERSION_hedis(0,16,0)
+import           Database.Redis
+import           Database.Redis.Commands
+import           Database.Redis.Connection
+import           Database.Redis.Types
+#else
+import           Database.Redis
+#endif
 import           Network.HTTP.Types   (StdMethod (..))
 import           Network.IPv6DB.Types
 import           Text.IPv6Addr
@@ -27,7 +34,7 @@ fromEntries :: (MonadReader Env f, MonadIO f)
             -> [Maybe BS.ByteString]
             -> f BSL.ByteString
 fromEntries (Entries ents) msrcs =
-  encode <$> zipWithM toJson ents msrcs
+  A.encode <$> zipWithM toJson ents msrcs
   where
     toJson Entry{..} (Just src) = do
       Env{..} <- ask
@@ -41,7 +48,7 @@ fromAddresses :: (MonadReader Env f, MonadIO f)
               -> [Maybe BS.ByteString]
               -> f BSL.ByteString
 fromAddresses list (Addresses addrs) msrcs =
-  encode <$> zipWithM toJson addrs msrcs
+  A.encode <$> zipWithM toJson addrs msrcs
   where
     toJson addr (Just src) = do
       Env{..} <- ask
@@ -58,12 +65,12 @@ buildResource conn list (IPv6Addr addr) src = do
   mttl <- ttlSource conn list addr
   return (fromJust $ toResource list addr mttl src)
 
-setSource ::Connection -> StdMethod -> Resource -> IO RedisResponse
+setSource :: Connection -> StdMethod -> Resource -> IO RedisResponse
 setSource _ _ ResourceError{} = undefined
 setSource conn mtd Resource{ttl=ttlr,..} = do
   er <- runRedis conn $ setOpts
           (toKey list $ unIPv6Addr address)
-          (BSL.toStrict $ encode source)
+          (BSL.toStrict $ A.encode source)
           SetOpts
             { setSeconds   = ttlr
             , setMilliseconds = Nothing
@@ -77,13 +84,13 @@ setSource conn mtd Resource{ttl=ttlr,..} = do
     case er of
       Right s ->
         case s of
-          Ok            -> RedisOk
+          Ok          -> RedisOk
           Status status -> toRedisError list address status
           Pong          -> toRedisError list address "Ping!"
       Left r ->
         case r of
-          R.Error err    -> toRedisError list address err
-          R.Bulk Nothing ->
+          Error err    -> toRedisError list address err
+          Bulk Nothing ->
             case mtd of
               PUT  ->
                 toRedisError
@@ -100,7 +107,7 @@ setSource conn mtd Resource{ttl=ttlr,..} = do
                   list
                   address
                   "HTTP Method Not Handled"
-          R.Bulk (Just bs) -> toRedisError list address bs
+          Bulk (Just bs) -> toRedisError list address bs
           _                ->
             toRedisError
                 list
@@ -122,7 +129,7 @@ ttlSource :: Connection
           -> T.Text
           -> IO (Maybe Integer)
 ttlSource conn list addr = do
-  ettl <- R.runRedis conn (R.ttl $ toKey list addr)
+  ettl <- runRedis conn (Database.Redis.ttl $ toKey list addr)
   return $
     case ettl of
       Right i ->
@@ -149,7 +156,7 @@ toResource :: T.Text
            -> BS.ByteString
            -> Maybe Resource
 toResource list addr mi bs =
-  decode (BSL.fromStrict bs) >>= \src ->
+  A.decode (BSL.fromStrict bs) >>= \src ->
     Just
       Resource
         { list    = list
@@ -158,17 +165,17 @@ toResource list addr mi bs =
         , source  = Source src
         }
 
-maybeResource :: Value
-              -> [(T.Text,Value)]
+maybeResource :: A.Value
+              -> [(T.Text,A.Value)]
               -> Maybe Resource
 maybeResource v prs =
   case v of
-    Object hm -> do
+    A.Object hm -> do
       let hm' =
             if KM.member "ttl" hm
               then hm
-              else KM.insert "ttl" Null hm
-      case fromJSON (Object $ KM.union hm' $ KM.fromHashMapText $ fromList prs) of
+              else KM.insert "ttl" A.Null hm
+      case A.fromJSON (A.Object $ KM.union hm' $ KM.fromHashMapText $ fromList prs) of
         A.Success r -> Just r
         A.Error _   -> Nothing
     _         -> Nothing
