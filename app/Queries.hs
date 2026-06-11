@@ -5,26 +5,26 @@
 
 module Queries where
 
-import           Control.Monad        (zipWithM)
+import           Control.Monad             (zipWithM)
 import           Control.Monad.Reader
-import qualified Data.Aeson           as A
-import qualified Data.Aeson.KeyMap    as KM
-import qualified Data.ByteString      as BS
-import qualified Data.ByteString.Lazy as BSL
-import           Data.HashMap.Lazy    (fromList)
-import           Data.Maybe           (fromJust)
-import qualified Data.Text            as T
+import qualified Data.Aeson                as A
+import qualified Data.Aeson.KeyMap         as KM
+import qualified Data.ByteString           as BS
+import qualified Data.ByteString.Lazy      as BSL
+import           Data.HashMap.Lazy         (fromList)
+import           Data.Maybe                (fromJust)
+import qualified Data.Text                 as T
 import           Data.Text.Encoding
 #if MIN_VERSION_hedis(0,16,0)
+import qualified Data.List.NonEmpty        as N
 import           Database.Redis
-import           Database.Redis.Commands ()
+import           Database.Redis.Commands   ()
 import           Database.Redis.Connection ()
-import           Database.Redis.Types ()
-import qualified Data.List.NonEmpty   as N
+import           Database.Redis.Types      ()
 #else
 import           Database.Redis
 #endif
-import           Network.HTTP.Types   (StdMethod (..))
+import           Network.HTTP.Types        (StdMethod (..))
 import           Network.IPv6DB.Types
 import           Text.IPv6Addr
 
@@ -100,7 +100,7 @@ setSource conn mtd Resource{ttl=ttlr,..} = do
     case er of
       Right s ->
         case s of
-          Ok          -> RedisOk
+          Ok            -> RedisOk
           Status status -> toRedisError list address status
           Pong          -> toRedisError list address "Ping!"
       Left r ->
